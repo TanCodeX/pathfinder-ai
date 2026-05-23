@@ -2,6 +2,15 @@ import { auth } from "@clerk/nextjs/server";
 import { generateGeminiContentStream } from "@/lib/gemini";
 import { db } from "@/lib/prisma";
 import { buildSecurePrompt } from "@/lib/prompt-safety";
+import {
+  getRateLimitIdentifier,
+  enforceRateLimit,
+  buildRateLimitResponse,
+} from "@/lib/rate-limit";
+import {
+  preparePromptForGeneration,
+  buildSseErrorResponse,
+} from "@/lib/prompt-guard";
 
 export async function POST(request) {
   const { userId } = await auth();
@@ -148,7 +157,7 @@ Rules:
 - Be practical, structured, and professional.
 - Give actionable advice.`,
           untrustedData: [
-            { label: "userQuery", value: prompt, maxLength: 4000 },
+            { label: "userQuery", value: promptCheck.prompt, maxLength: 4000 },
           ],
         });
 
@@ -196,7 +205,7 @@ Rules:
             })}\n\n`
           )
         );
-
+        controller.enqueue(encoder.encode("data: [DONE]\n\n"));
         controller.close();
       }
     },
