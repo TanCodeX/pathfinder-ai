@@ -1,8 +1,29 @@
 import { auth } from "@clerk/nextjs/server";
 import { generateGeminiContentStream } from "@/lib/gemini";
+import {
+  buildRateLimitResponse,
+  enforceRateLimit,
+  getRateLimitIdentifier,
+} from "@/lib/rate-limit";
 
 export async function POST(request) {
   const { userId } = await auth();
+  const endpoint = "/api/generate";
+  const subject = getRateLimitIdentifier(request, userId);
+  const rateLimit = enforceRateLimit({
+    endpoint,
+    subject,
+    limitPerMinute: userId ? 20 : 5,
+    burstCapacity: userId ? 10 : 5,
+  });
+
+  if (!rateLimit.allowed) {
+    return buildRateLimitResponse({
+      message: "Too Many Requests",
+      retryAfterSeconds: rateLimit.retryAfterSeconds,
+      sse: true,
+    });
+  }
 
   if (!userId) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
