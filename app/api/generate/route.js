@@ -108,22 +108,24 @@ export async function POST(request) {
       );
     }
 
-    await db.message.create({
-      data: {
-        conversationId,
-        role: "user",
-        content: prompt,
-      },
-    });
+    if (user.saveChatHistory) {
+      await db.message.create({
+        data: {
+          conversationId,
+          role: "user",
+          content: prompt,
+        },
+      });
 
-    await db.conversation.update({
-      where: {
-        id: conversationId,
-      },
-      data: {
-        updatedAt: new Date(),
-      },
-    });
+      await db.conversation.update({
+        where: {
+          id: conversationId,
+        },
+        data: {
+          updatedAt: new Date(),
+        },
+      });
+    }
   }
 
   const encoder = new TextEncoder();
@@ -175,22 +177,24 @@ Rules:
         }
 
         if (conversationId && fullResponse.trim()) {
-          await db.message.create({
-            data: {
-              conversationId,
-              role: "assistant",
-              content: fullResponse,
-            },
-          });
+          if (user.saveChatHistory) {
+            await db.message.create({
+              data: {
+                conversationId,
+                role: "assistant",
+                content: fullResponse,
+              },
+            });
 
-          await db.conversation.update({
-            where: {
-              id: conversationId,
-            },
-            data: {
-              updatedAt: new Date(),
-            },
-          });
+            await db.conversation.update({
+              where: {
+                id: conversationId,
+              },
+              data: {
+                updatedAt: new Date(),
+              },
+            });
+          }
         }
 
         controller.enqueue(encoder.encode("data: [DONE]\n\n"));

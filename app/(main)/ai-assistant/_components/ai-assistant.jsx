@@ -14,6 +14,8 @@ import {
   FileText,
   Users,
   Briefcase,
+  Search,
+  Settings,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -67,6 +69,13 @@ export default function AIAssistant() {
   const [activeConversationId, setActiveConversationId] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isLoadingConversations, setIsLoadingConversations] = useState(true);
+  
+  // Search & Preferences
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
+  const [saveChatHistory, setSaveChatHistory] = useState(true);
+  const [isLoadingPreferences, setIsLoadingPreferences] = useState(true);
+  const [isUpdatingPreference, setIsUpdatingPreference] = useState(false);
 
   useEffect(() => {
     const handleResize = () => {
@@ -172,9 +181,67 @@ export default function AIAssistant() {
     }
   };
 
+  const fetchPreferences = async () => {
+    try {
+      const res = await fetch("/api/user/preferences");
+      if (res.ok) {
+        const data = await res.json();
+        setSaveChatHistory(data.saveChatHistory);
+      }
+    } catch (error) {
+      console.error("Failed to fetch preferences:", error);
+    } finally {
+      setIsLoadingPreferences(false);
+    }
+  };
+
+  const handleToggleHistory = async (checked) => {
+    setIsUpdatingPreference(true);
+    setSaveChatHistory(checked);
+    try {
+      const res = await fetch("/api/user/preferences", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ saveChatHistory: checked }),
+      });
+      if (!res.ok) {
+        setSaveChatHistory(!checked);
+      }
+    } catch (error) {
+      console.error("Failed to update preferences:", error);
+      setSaveChatHistory(!checked);
+    } finally {
+      setIsUpdatingPreference(false);
+    }
+  };
+
   useEffect(() => {
     fetchConversations();
+    fetchPreferences();
   }, []);
+
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(async () => {
+      if (searchTerm.trim()) {
+        setIsSearching(true);
+        try {
+          const res = await fetch(`/api/conversations/search?q=${encodeURIComponent(searchTerm.trim())}`);
+          if (res.ok) {
+            const data = await res.json();
+            setConversations(data.conversations);
+          }
+        } catch (error) {
+          console.error("Failed to search conversations:", error);
+        } finally {
+          setIsSearching(false);
+        }
+      } else {
+        fetchConversations();
+      }
+    }, 300);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchTerm]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -191,7 +258,7 @@ export default function AIAssistant() {
 
     let conversationId = activeConversationId;
 
-    if (!conversationId) {
+    if (!conversationId && saveChatHistory) {
       conversationId = await createConversation(trimmed);
     }
 
@@ -199,7 +266,10 @@ export default function AIAssistant() {
     setInput("");
 
     await startStream(trimmed, conversationId);
-    fetchConversations();
+    
+    if (saveChatHistory) {
+      fetchConversations();
+    }
   };
 
   useEffect(() => {
@@ -310,6 +380,61 @@ export default function AIAssistant() {
                 </AlertDialogContent>
               </AlertDialog>
             )}
+          </div>
+
+          {/* Search Input */}
+          <div className="relative mb-4 px-1">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="Search conversations..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full h-9 rounded-xl border border-border/50 bg-muted/50 pl-9 pr-8 text-sm outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all placeholder:text-muted-foreground/70"
+            />
+            {isSearching && (
+              <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 h-3 w-3 animate-spin text-muted-foreground" />
+            )}
+          </div>
+
+          {/* Privacy Settings */}
+          <div className="px-1 mb-4">
+            <div className="p-3 bg-muted/30 border border-border/50 rounded-xl space-y-3 transition-colors hover:bg-muted/50">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Settings className="h-4 w-4" />
+                  <span className="text-sm font-medium text-foreground">Save History</span>
+                </div>
+                {isLoadingPreferences ? (
+                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                ) : (
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={saveChatHistory}
+                    disabled={isUpdatingPreference}
+                    onClick={() => handleToggleHistory(!saveChatHistory)}
+                    className={`
+                      relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background disabled:opacity-50 disabled:cursor-not-allowed
+                      ${saveChatHistory ? 'bg-primary' : 'bg-input hover:bg-muted-foreground/30'}
+                    `}
+                  >
+                    <span
+                      aria-hidden="true"
+                      className={`
+                        pointer-events-none inline-block h-4 w-4 transform rounded-full bg-background shadow ring-0 transition duration-200 ease-in-out
+                        ${saveChatHistory ? 'translate-x-4' : 'translate-x-0'}
+                      `}
+                    />
+                  </button>
+                )}
+              </div>
+              {!saveChatHistory && !isLoadingPreferences && (
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  When disabled, future chats will not be saved.
+                </p>
+              )}
+            </div>
           </div>
 
           <div className="space-y-1 overflow-y-auto flex-1 px-2 -mx-2 scrollbar-thin">

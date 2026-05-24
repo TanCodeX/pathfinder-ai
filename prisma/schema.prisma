@@ -21,6 +21,9 @@ model User {
   bio             String?
   experience      Int?
 
+  // Settings
+  saveChatHistory Boolean          @default(true)
+
   // Relations
   skills          String[]
   assessments     Assessment[]
