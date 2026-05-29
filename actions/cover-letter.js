@@ -124,12 +124,12 @@ ${user.name || "Candidate"}
  */
 export async function getCoverLetters() {
   const { userId } = await auth();
-  if (!userId) throw new Error("Unauthorized");
+  if (!userId) return [];
 
   const user = await db.user.findUnique({
     where: { clerkUserId: userId },
   });
-  if (!user) throw new Error("User not found");
+  if (!user) return [];
 
   return db.coverLetter.findMany({
     where: { userId: user.id },
@@ -142,12 +142,12 @@ export async function getCoverLetters() {
  */
 export async function getCoverLetter(id) {
   const { userId } = await auth();
-  if (!userId) throw new Error("Unauthorized");
+  if (!userId) return null;
 
   const user = await db.user.findUnique({
     where: { clerkUserId: userId },
   });
-  if (!user) throw new Error("User not found");
+  if (!user) return null;
 
   return db.coverLetter.findFirst({
     where: {
@@ -162,17 +162,19 @@ export async function getCoverLetter(id) {
  */
 export async function deleteCoverLetter(id) {
   const { userId } = await auth();
-  if (!userId) throw new Error("Unauthorized");
+  if (!userId) return { success: false, errors: { _form: ["Unauthorized"] } };
 
   const user = await db.user.findUnique({
     where: { clerkUserId: userId },
   });
-  if (!user) throw new Error("User not found");
+  if (!user) return { success: false, errors: { _form: ["User not found"] } };
 
- return db.coverLetter.deleteMany({
-  where: {
-    id,
-    userId: user.id,
-  },
-});
+  await db.coverLetter.deleteMany({
+    where: {
+      id,
+      userId: user.id,
+    },
+  });
+
+  return { success: true };
 }

@@ -1,102 +1,105 @@
 "use client";
 
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Terminal, Copy, Check } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeSanitize from "rehype-sanitize";
 import { useDebounce } from "use-debounce";
 import CitationRenderer from "@/components/chat/citation-renderer";
-import React from "react";
+import React, { useState } from "react";
+import { cn } from "@/lib/utils";
 
-/** Custom markdown components with extra spacing on headings */
+const CodeBlock = ({ children }) => {
+  const [copied, setCopied] = useState(false);
+
+  const onCopy = () => {
+    navigator.clipboard.writeText(children);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="relative group my-6">
+      <div className="absolute right-4 top-4 z-20">
+        <button
+          onClick={onCopy}
+          className="p-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 transition-all opacity-0 group-hover:opacity-100"
+        >
+          {copied ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5 text-muted-foreground" />}
+        </button>
+      </div>
+      <div className="flex items-center gap-2 px-4 py-2 border-x border-t border-border rounded-t-xl bg-muted/50 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+        <Terminal className="h-3 w-3" />
+        Code Snippet
+      </div>
+      <pre className="p-4 rounded-b-xl border border-border bg-muted/30 overflow-x-auto text-[13px] font-mono leading-relaxed custom-scrollbar">
+        {children}
+      </pre>
+    </div>
+  );
+};
+
 export const markdownComponents = {
   h1: ({ children }) => (
-    <h1 className="text-xl font-bold mt-6 mb-3">{children}</h1>
+    <h1 className="text-2xl font-black tracking-tight text-foreground mt-8 mb-4 border-b border-border pb-2">{children}</h1>
   ),
   h2: ({ children }) => (
-    <h2 className="text-lg font-bold mt-5 mb-2.5">{children}</h2>
+    <h2 className="text-xl font-bold tracking-tight text-foreground mt-6 mb-3">{children}</h2>
   ),
   h3: ({ children }) => (
-    <h3 className="text-base font-bold mt-4 mb-2">{children}</h3>
-  ),
-  h4: ({ children }) => (
-    <h4 className="text-sm font-bold mt-3 mb-1.5">{children}</h4>
+    <h3 className="text-lg font-bold text-foreground mt-5 mb-2">{children}</h3>
   ),
   p: ({ children }) => (
-  <p className="mb-3 leading-relaxed">
-    <CitationRenderer
-      text={React.Children.toArray(children).join("")}
-    />
-  </p>
-),
-  ul: ({ children }) => (
-    <ul className="list-disc pl-5 mb-3 space-y-1">{children}</ul>
+    <div className="mb-4 leading-relaxed text-muted-foreground last:mb-0">
+      <CitationRenderer text={React.Children.toArray(children).join("")} />
+    </div>
   ),
-  ol: ({ children }) => (
-    <ol className="list-decimal pl-5 mb-3 space-y-1">{children}</ol>
+  ul: ({ children }) => (
+    <ul className="list-none mb-6 space-y-2 mt-2">{children}</ul>
   ),
   li: ({ children }) => (
-    <li className="leading-relaxed">{children}</li>
+    <li className="flex gap-2 items-start text-muted-foreground leading-relaxed">
+      <span className="h-1.5 w-1.5 rounded-full bg-primary mt-2 shrink-0" />
+      <span>{children}</span>
+    </li>
   ),
   strong: ({ children }) => (
-    <strong className="font-semibold">{children}</strong>
+    <strong className="font-bold text-foreground">{children}</strong>
   ),
-  code: ({ inline, className, children, ...props }) => {
+  code: ({ inline, children }) => {
     if (inline) {
       return (
-        <code
-          className="bg-muted-foreground/10 px-1.5 py-0.5 rounded text-xs font-mono"
-          {...props}
-        >
+        <code className="bg-primary/10 text-primary px-1.5 py-0.5 rounded-md text-[13px] font-mono font-bold">
           {children}
         </code>
       );
     }
-
-    return (
-      <code
-        className="text-xs font-mono"
-        {...props}
-      >
-        {children}
-      </code>
-    );
+    return <CodeBlock>{children}</CodeBlock>;
   },
-  pre: ({ children }) => (
-    <pre className="bg-muted-foreground/10 p-3 rounded-md mb-3 overflow-x-auto text-xs font-mono">
-      {children}
-    </pre>
-  ),
   blockquote: ({ children }) => (
-    <blockquote className="border-l-3 border-primary/40 pl-4 italic mb-3">
+    <blockquote className="border-l-4 border-primary/20 bg-primary/5 pl-6 py-4 rounded-r-2xl italic mb-6 text-foreground font-medium">
       {children}
     </blockquote>
   ),
 };
 
-/**
- * Renders streamed text with a typing effect, blinking cursor, and markdown formatting.
- *
- * @param {object}  props
- * @param {string}  props.text      — The accumulated streamed text
- * @param {boolean} props.isLoading — Whether the stream is still active
- * @param {string}  [props.error]   — Error message to display
- * @param {string}  [props.emptyMessage] — Message shown when no text yet
- */
 function StreamedText({
   text,
   isLoading,
   error,
   emptyMessage = "AI response will appear here...",
 }) {
-  const [debouncedText] = useDebounce(text, 40);
+  const [debouncedText] = useDebounce(text, 20);
+  
   if (error) {
     return (
-      <div className="flex items-start gap-3 rounded-lg border border-destructive/50 bg-destructive/5 p-4 text-sm text-destructive">
-        <AlertTriangle className="h-5 w-5 shrink-0 mt-0.5" />
+      <div className="flex items-start gap-4 rounded-3xl border border-destructive/20 bg-destructive/5 p-6 text-sm text-destructive shadow-sm">
+        <div className="h-10 w-10 rounded-2xl bg-destructive/10 flex items-center justify-center shrink-0">
+          <AlertTriangle className="h-5 w-5" />
+        </div>
         <div>
-          <p className="font-medium">Generation failed</p>
-          <p className="text-destructive/80 mt-1">{error}</p>
+          <p className="font-black uppercase tracking-widest text-[10px] mb-1">Neural Engine Error</p>
+          <p className="text-destructive/80 leading-relaxed font-medium">{error}</p>
         </div>
       </div>
     );
@@ -104,12 +107,12 @@ function StreamedText({
 
   if (!text && !isLoading) {
     return (
-      <p className="text-muted-foreground text-sm">{emptyMessage}</p>
+      <p className="text-muted-foreground text-sm font-medium animate-pulse">{emptyMessage}</p>
     );
   }
 
   return (
-    <div className="break-words text-sm leading-relaxed">
+    <div className="break-words leading-relaxed relative">
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeSanitize]}
@@ -119,10 +122,14 @@ function StreamedText({
       </ReactMarkdown>
 
       {isLoading && (
-        <span className="inline-block w-2 h-4 ml-0.5 bg-foreground animate-pulse align-text-bottom" />
+        <motion.span 
+          animate={{ opacity: [0, 1, 0] }}
+          transition={{ duration: 0.8, repeat: Infinity }}
+          className="inline-block w-2.5 h-5 ml-1 bg-primary rounded-sm align-middle" 
+        />
       )}
     </div>
   );
 }
-export default StreamedText;
 
+export default StreamedText;

@@ -43,12 +43,12 @@ export async function saveResume(rawContent) {
 
 export async function getResume() {
   const { userId } = await auth();
-  if (!userId) throw new Error("Unauthorized");
+  if (!userId) return null;
 
   const user = await db.user.findUnique({
     where: { clerkUserId: userId },
   });
-  if (!user) throw new Error("User not found");
+  if (!user) return null;
 
   return await db.resume.findUnique({
     where: {

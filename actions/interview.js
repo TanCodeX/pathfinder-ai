@@ -296,12 +296,12 @@ export async function saveQuizResult(questions, answers, score, category = "Tech
  */
 export async function getAssessments() {
   const { userId } = await auth();
-  if (!userId) throw new Error("Unauthorized");
+  if (!userId) return [];
 
   const user = await db.user.findUnique({
     where: { clerkUserId: userId },
   });
-  if (!user) throw new Error("User not found");
+  if (!user) return [];
 
   return db.assessment.findMany({
     where: { userId: user.id },
@@ -314,12 +314,12 @@ export async function getAssessments() {
  */
 export async function getAssessment(id) {
   const { userId } = await auth();
-  if (!userId) throw new Error("Unauthorized");
+  if (!userId) return null;
 
   const user = await db.user.findUnique({
     where: { clerkUserId: userId },
   });
-  if (!user) throw new Error("User not found");
+  if (!user) return null;
 
   const assessment = await db.assessment.findUnique({
     where: {
@@ -328,6 +328,5 @@ export async function getAssessment(id) {
     },
   });
 
-  if (!assessment) throw new Error("Assessment not found or access denied.");
   return assessment;
 }

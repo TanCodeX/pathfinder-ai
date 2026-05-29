@@ -5,11 +5,11 @@ import { Toaster } from "@/components/ui/sonner";
 import { Providers } from "@/components/providers";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
+import { BackgroundEngine } from "@/components/backgrounds";
 import { getEnv } from "@/lib/env";
 
 const inter = Inter({ subsets: ["latin"] });
 
-// Validate env at startup (throws in production if misconfigured)
 getEnv();
 
 export const metadata = {
@@ -24,10 +24,17 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <ClerkProvider>
+    <ClerkProvider
+      signInUrl="/sign-in"
+      signUpUrl="/sign-up"
+      signInFallbackRedirectUrl="/onboarding"
+      signUpFallbackRedirectUrl="/onboarding"
+      afterSignOutUrl="/"
+    >
       <html lang="en" suppressHydrationWarning>
         <body className={inter.className}>
           <Providers>
+            <BackgroundEngine />
             <Header />
             <main className="min-h-screen">{children}</main>
             <Toaster richColors />

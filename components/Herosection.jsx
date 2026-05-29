@@ -3,9 +3,10 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform, useSpring } from "framer-motion";
 import { TypeAnimation } from "react-type-animation";
 import { useAuth } from "@clerk/nextjs";
+import { ArrowRight, Sparkles, Play } from "lucide-react";
 
 const HeroSection = () => {
   const imageRef = useRef(null);
@@ -14,24 +15,13 @@ const HeroSection = () => {
   const [isHovered, setIsHovered] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const { scrollYProgress } = useScroll();
-  const overlayOpacity = useTransform(scrollYProgress, [0, 0.5], [0, 0.3]);
+  
+  const y = useTransform(scrollYProgress, [0, 1], [0, -50]);
+  const opacity = useTransform(scrollYProgress, [0, 0.2], [1, 0]);
+  const scale = useTransform(scrollYProgress, [0, 0.2], [1, 0.95]);
 
-  useEffect(() => {
-    const imageElement = imageRef.current;
-    const handleScroll = () => {
-      const scrollPosition = window.scrollY;
-      const scrollThreshold = 100;
-      if (imageElement) {
-        if (scrollPosition > scrollThreshold) {
-          imageElement.classList.add("scrolled");
-        } else {
-          imageElement.classList.remove("scrolled");
-        }
-      }
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  const springConfig = { stiffness: 100, damping: 30, restDelta: 0.001 };
+  const translateY = useSpring(y, springConfig);
 
   const handleDashboardClick = () => {
     if (isSignedIn) {
@@ -42,120 +32,94 @@ const HeroSection = () => {
   };
 
   return (
-    <section id = "home" className="w-full pt-36 md:pt-48 pb-10">
-      <motion.div
-        initial={{ opacity: 0, y: 40 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
-        className="space-y-6 text-center"
-      >
-        <div className="space-y-6 mx-auto">
-  {/* New: Premium Badge */}
-  <motion.div
-    initial={{ opacity: 0, y: -10 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ delay: 0.1, duration: 0.5 }}
-    className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 backdrop-blur-sm"
-  >
-    <span className="relative flex h-2 w-2">
-      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
-      <span className="relative inline-flex rounded-full h-2 w-2 bg-purple-500"></span>
-    </span>
-    <span className="text-sm font-medium bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-      ✨ AI-Powered Career Companion
-    </span>
-  </motion.div>
+    <section id="home" className="relative w-full pt-32 md:pt-48 pb-20 overflow-hidden">
+      {/* Background Decorative Elements */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-full -z-10 opacity-30 pointer-events-none">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/20 rounded-full blur-[120px] animate-pulse-slow" />
+        <div className="absolute bottom-[20%] right-[-10%] w-[30%] h-[30%] bg-purple-500/20 rounded-full blur-[100px] animate-pulse-slow" style={{ animationDelay: "2s" }} />
+      </div>
 
-          <motion.h1
-            className="text-5xl font-bold md:text-6xl lg:text-7xl xl:text-8xl gradient-title animate-gradient"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3, duration: 0.6 }}
-          >
-            <TypeAnimation
-              sequence={[
-                "Your AI Career Coach for",
-                1000,
-                "Professional Growth",
-                1000,
-                "Professional Success",
-                1000,
-              ]}
-              wrapper="span"
-              speed={50}
-              repeat={Infinity}
-              className="block"
-            />
-          </motion.h1>
-          <motion.p
-            className="mx-auto max-w-[600px] text-muted-foreground md:text-xl"
-            initial={{ opacity: 0, y: 10 }}
+      <motion.div
+        style={{ y: translateY, opacity, scale }}
+        className="container mx-auto px-4 md:px-6 relative z-10"
+      >
+        <div className="max-w-4xl mx-auto text-center space-y-8">
+          {/* Premium Badge */}
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6, duration: 0.5 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass border border-white/20 dark:border-white/10"
           >
-            Advance your career with personalized guidance, interview prep, and
-            AI-powered tools for job success.
-          </motion.p>
+            <div className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary/40 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+            </div>
+            <span className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-foreground/80 flex items-center gap-1.5">
+              <Sparkles className="h-3 w-3 text-primary" />
+              Revolutionizing Careers with AI
+            </span>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            className="space-y-4"
+          >
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.1] text-foreground">
+              Your Professional Future, <br />
+              <span className="text-gradient-primary">Reimagined with AI.</span>
+            </h1>
+            
+            <p className="mx-auto max-w-2xl text-lg md:text-xl text-muted-foreground leading-relaxed">
+              Unlock your true potential with PathFinder AI. Get personalized career coaching, 
+              precision-engineered resumes, and expert-level interview preparation.
+            </p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4"
+          >
+            <Button
+              size="lg"
+              onClick={handleDashboardClick}
+              className="h-14 px-8 rounded-2xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all duration-300 hover:scale-105 font-bold group"
+            >
+              Launch Your Career
+              <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+            </Button>
+
+            <Button
+              size="lg"
+              variant="outline"
+              onClick={() => {
+                const featuresSection = document.getElementById("features");
+                if (featuresSection) {
+                  featuresSection.scrollIntoView({ behavior: "smooth", block: "start" });
+                }
+              }}
+              className="h-14 px-8 rounded-2xl glass hover:bg-muted/50 transition-all duration-300 font-bold group"
+            >
+              Explore Features
+            </Button>
+          </motion.div>
         </div>
 
+        {/* Hero Visual */}
         <motion.div
-  className="flex flex-col sm:flex-row justify-center items-center gap-4"
-  initial={{ opacity: 0, y: 10 }}
-  animate={{ opacity: 1, y: 0 }}
-  transition={{ delay: 0.8, duration: 0.5 }}
->
-  {/* Primary CTA - Gradient Button */}
-  <Button
-    size="lg"
-    onClick={handleDashboardClick}
-    className="relative px-8 bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 hover:from-purple-700 hover:via-pink-700 hover:to-blue-700 text-white border-0 shadow-lg hover:shadow-2xl hover:shadow-purple-500/50 transition-all duration-300 hover:scale-105 font-semibold"
-  >
-    Get Started
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M13 7l5 5m0 0l-5 5m5-5H6"
-      />
-    </svg>
-  </Button>
-
-  {/* Secondary CTA - Outline Button */}
-  <Button
-    size="lg"
-    variant="outline"
-    onClick={() => {
-      const featuresSection = document.getElementById("features");
-      if (featuresSection) {
-        featuresSection.scrollIntoView({ behavior: "smooth", block: "start" });
-      }
-    }}
-    className="px-8 border-2 border-foreground/20 hover:border-foreground/40 bg-background/50 backdrop-blur-sm hover:bg-background/80 transition-all duration-300 hover:scale-105 font-semibold"
-  >
-    Learn More
-  </Button>
-</motion.div>
-
-        <motion.div
-          className="hero-image-wrapper mt-5 md:mt-0"
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 1.1, duration: 0.6 }}
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6, duration: 1, ease: [0.16, 1, 0.3, 1] }}
+          className="mt-20 relative group"
         >
+          <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 via-purple-500/20 to-pink-500/20 rounded-3xl blur-2xl opacity-50 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
+          
           <motion.div
             ref={imageRef}
-            className="relative mx-auto w-full max-w-[1280px] rounded-lg shadow-2xl border perspective-1000"
-            initial={{ rotateX: 0, rotateY: 0, opacity: 0, scale: 0.95 }}
-            animate={{ rotateX: 0, rotateY: 0, opacity: 1, scale: 1 }}
-            whileHover={{ rotateX: -6, rotateY: 6 }}
-            transition={{ type: "spring", stiffness: 200, damping: 15, delay: 1.1 }}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
             onMouseMove={(e) => {
@@ -165,57 +129,69 @@ const HeroSection = () => {
                 y: (e.clientY - rect.top) / rect.height - 0.5,
               });
             }}
+            style={{
+              rotateX: isHovered ? mousePosition.y * -10 : 0,
+              rotateY: isHovered ? mousePosition.x * 10 : 0,
+              transformStyle: "preserve-3d",
+            }}
+            className="relative mx-auto max-w-5xl rounded-2xl overflow-hidden glass border border-white/20 dark:border-white/10 shadow-2xl transition-all duration-200"
           >
-            {/* Video */}
-            <motion.video
+            <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 to-transparent z-10 pointer-events-none" />
+            
+            <video
               src="/pathfinder-ai.mp4"
               autoPlay
               loop
               muted
               playsInline
-              className="rounded-lg w-full h-auto block"
-              poster="/fallback-image.jpg"
+              className="w-full h-auto object-cover opacity-90 transition-opacity duration-500 group-hover:opacity-100"
             />
 
-            {/* Overlay gradient that fades in as you scroll down */}
-            <motion.div
-              className="absolute inset-0 rounded-lg pointer-events-none bg-gradient-to-t from-primary/10 to-transparent mix-blend-overlay"
-              style={{
-                opacity: overlayOpacity,
-              }}
-            />
+            {/* Premium Video Overlay Controls UI (Fake) */}
+            <div className="absolute bottom-6 left-6 right-6 flex items-center justify-between z-20">
+              <div className="flex items-center gap-3 px-3 py-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-[10px] text-white/80 font-bold uppercase tracking-widest">
+                <div className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse" />
+                Live Career Intelligence
+              </div>
+              <div className="flex gap-2">
+                <div className="h-8 w-8 rounded-full bg-white/10 backdrop-blur-md border border-white/10 flex items-center justify-center text-white">
+                  <Play className="h-3 w-3 fill-current" />
+                </div>
+              </div>
+            </div>
+          </motion.div>
 
-            {/* Reflection on hover */}
-            <motion.div
-              className="absolute inset-0 rounded-lg pointer-events-none bg-gradient-to-b from-white/10 to-transparent"
-              animate={{ opacity: isHovered ? 0.2 : 0 }}
-              transition={{ duration: 0.3 }}
-            />
+          {/* Floating UI Elements (Fake) */}
+          <motion.div
+            animate={{ y: [0, -10, 0] }}
+            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute -top-10 -left-10 hidden lg:block p-6 glass rounded-2xl shadow-xl z-20 border border-white/20"
+          >
+            <div className="flex items-center gap-4">
+              <div className="h-12 w-12 rounded-full bg-green-500/20 flex items-center justify-center text-green-500">
+                <Sparkles className="h-6 w-6" />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Growth</p>
+                <p className="text-xl font-bold">+124% Reach</p>
+              </div>
+            </div>
+          </motion.div>
 
-            {/* Cursor-following radial glow */}
-            <motion.div
-              className="absolute inset-0 rounded-lg pointer-events-none"
-              animate={{
-                background: isHovered
-                  ? `radial-gradient(circle at ${(mousePosition.x + 0.5) * 100}% ${(mousePosition.y + 0.5) * 100}%, rgba(124,58,237,0.35) 0%, rgba(0,0,0,0) 70%)`
-                  : "none",
-                opacity: isHovered ? 1 : 0,
-              }}
-              transition={{ duration: 0.2 }}
-            />
-
-            {/* Slow pulsing ambient glow */}
-            <motion.div
-              className="absolute inset-0 rounded-lg pointer-events-none bg-primary/5"
-              animate={{
-                boxShadow: [
-                  "0 0 0 rgba(124, 58, 237, 0)",
-                  "0 0 20px rgba(124, 58, 237, 0.3)",
-                  "0 0 0 rgba(124, 58, 237, 0)",
-                ],
-              }}
-              transition={{ duration: 2, repeat: Infinity, repeatType: "loop" }}
-            />
+          <motion.div
+            animate={{ y: [0, 10, 0] }}
+            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+            className="absolute -bottom-10 -right-10 hidden lg:block p-6 glass rounded-2xl shadow-xl z-20 border border-white/20"
+          >
+            <div className="flex items-center gap-4">
+              <div className="h-12 w-12 rounded-full bg-primary/20 flex items-center justify-center text-primary">
+                <Play className="h-6 w-6 fill-current" />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Status</p>
+                <p className="text-xl font-bold">Onboarding Ready</p>
+              </div>
+            </div>
           </motion.div>
         </motion.div>
       </motion.div>

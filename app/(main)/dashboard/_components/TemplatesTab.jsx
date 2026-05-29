@@ -2,12 +2,13 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Check } from "lucide-react";
+import { Check, ChevronRight, FileText, Mail, Layout } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
 
 const TEMPLATES = [
   { id:"harvard",      type:"resume",  name:"Harvard Classic", 
-    tag:"Clean minimal",    badge:"ATS Ready",  badgeColor:"emerald",
+    tag:"Clean & minimal",    badge:"ATS Ready",  badgeColor:"emerald",
     href:"/resume?template=harvard" },
   { id:"split",        type:"resume",  name:"Modern Split", 
     tag:"Two column",       badge:"Popular",    badgeColor:"blue",
@@ -17,34 +18,34 @@ const TEMPLATES = [
     href:"/resume?template=tech" },
   { id:"professional", type:"cover",   name:"Professional", 
     tag:"Formal tone",      badge:"New",        badgeColor:"blue",
-    href:"/cover-letter?template=professional" },
+    href:"/ai-cover-letter?template=professional" },
   { id:"startup",      type:"cover",   name:"Startup Pitch", 
     tag:"Casual & bold",    badge:null,         badgeColor:null,
-    href:"/cover-letter?template=startup" },
+    href:"/ai-cover-letter?template=startup" },
   { id:"minimal",      type:"cover",   name:"Minimal Line", 
     tag:"Clean design",     badge:null,         badgeColor:null,
-    href:"/cover-letter?template=minimal" },
+    href:"/ai-cover-letter?template=minimal" },
 ];
 
-function TemplatePreview({ id }) {
-  // Simple mockup using divs
+function TemplatePreview({ id, type }) {
   return (
-    <div className="w-[76px] h-[100px] bg-background border border-border rounded-sm p-2 flex flex-col gap-1.5 shadow-sm overflow-hidden">
-      <div className={cn("h-1 w-full rounded-full", id.includes("resume") || id === "harvard" || id === "split" || id === "tech" ? "bg-blue-400/30" : "bg-emerald-400/30")} />
-      <div className="h-1 w-[60%] bg-muted-foreground/20 rounded-full" />
-      <div className="flex gap-1 mt-1">
-        <div className="h-1 w-1/2 bg-muted-foreground/20 rounded-full" />
-        <div className="h-1 w-1/4 bg-muted-foreground/20 rounded-full" />
+    <div className="w-[100px] h-[140px] bg-background border border-border rounded-xl p-3 flex flex-col gap-2 shadow-sm overflow-hidden transition-transform duration-500 group-hover:scale-105">
+      <div className={cn("h-1.5 w-full rounded-full", type === "resume" ? "bg-blue-500/20" : "bg-primary/20")} />
+      <div className="h-1.5 w-[70%] bg-muted/40 rounded-full" />
+      <div className="flex gap-1.5 mt-1">
+        <div className="h-1.5 w-1/2 bg-muted/40 rounded-full" />
+        <div className="h-1.5 w-1/4 bg-muted/40 rounded-full" />
       </div>
-      <div className="h-1 w-full bg-muted-foreground/10 rounded-full mt-2" />
-      <div className="h-1 w-full bg-muted-foreground/10 rounded-full" />
-      <div className="h-1 w-full bg-muted-foreground/10 rounded-full" />
+      <div className="h-1.5 w-full bg-muted/20 rounded-full mt-3" />
+      <div className="h-1.5 w-full bg-muted/20 rounded-full" />
+      <div className="h-1.5 w-[85%] bg-muted/20 rounded-full" />
+      
       {id === "split" && (
-        <div className="flex gap-1 mt-2">
-          <div className="w-1/3 h-8 bg-muted/50 rounded-sm" />
-          <div className="flex-1 flex flex-col gap-1">
-            <div className="h-1 w-full bg-muted-foreground/10 rounded-full" />
-            <div className="h-1 w-full bg-muted-foreground/10 rounded-full" />
+        <div className="flex gap-2 mt-3">
+          <div className="w-1/3 h-10 bg-muted/30 rounded-lg" />
+          <div className="flex-1 flex flex-col gap-1.5">
+            <div className="h-1.5 w-full bg-muted/20 rounded-full" />
+            <div className="h-1.5 w-full bg-muted/20 rounded-full" />
           </div>
         </div>
       )}
@@ -59,80 +60,116 @@ export default function TemplatesTab() {
   const filtered = TEMPLATES.filter((t) => {
     if (filter === "All") return true;
     if (filter === "Resumes") return t.type === "resume";
-    if (filter === "Cover Letters") return t.type === "cover";
+    if (filter === "Letters") return t.type === "cover";
     return true;
   });
 
   return (
-    <div>
-      <h1 className="text-lg font-medium text-foreground mb-1">Templates</h1>
-      <p className="text-sm text-muted-foreground mb-6">
-        Pick a starting point — AI fills in your details
-      </p>
+    <div className="space-y-8">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div>
+          <h2 className="text-xl font-bold flex items-center gap-2">
+            <Layout className="h-5 w-5 text-primary" />
+            Smart Templates
+          </h2>
+          <p className="text-sm text-muted-foreground">Premium layouts powered by AI precision.</p>
+        </div>
 
-      <div className="flex gap-2 mb-6">
-        {["All", "Resumes", "Cover Letters"].map((f) => (
-          <div
-            key={f}
-            onClick={() => setFilter(f)}
-            className={cn(
-              "text-xs px-3 py-1.5 rounded-md border border-border cursor-pointer transition-colors",
-              filter === f 
-                ? "bg-muted text-foreground font-medium" 
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            {f}
-          </div>
-        ))}
+        <div className="flex p-1 bg-muted/50 rounded-xl border border-border w-fit">
+          {["All", "Resumes", "Letters"].map((f) => (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className={cn(
+                "px-4 py-1.5 rounded-lg text-xs font-bold transition-all",
+                filter === f 
+                  ? "bg-background text-foreground shadow-sm border border-border" 
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              {f}
+            </button>
+          ))}
+        </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-        {filtered.map((t) => (
-          <div 
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
+        {filtered.map((t, i) => (
+          <motion.div 
             key={t.id}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.05 }}
             onClick={() => setSelected(t.id)}
             className={cn(
-              "border rounded-lg overflow-hidden cursor-pointer transition-colors hover:border-foreground/30",
+              "group relative flex flex-col rounded-3xl overflow-hidden cursor-pointer border-2 transition-all duration-300",
               selected === t.id 
-                ? "border-blue-500/60 ring-1 ring-blue-500/20" 
-                : "border-border"
+                ? "border-primary bg-primary/[0.02] shadow-xl ring-4 ring-primary/5" 
+                : "border-transparent bg-card border-border hover:border-border/80 hover:shadow-lg"
             )}
           >
-            <div className="h-28 bg-muted flex items-center justify-center relative">
-              <TemplatePreview id={t.id} />
+            <div className="h-44 bg-muted/30 flex items-center justify-center relative overflow-hidden">
+              {/* Background Glow */}
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              
+              <TemplatePreview id={t.id} type={t.type} />
+              
               {t.badge && (
                 <span className={cn(
-                  "absolute top-2 right-2 text-[10px] px-2 py-0.5 rounded-sm font-medium",
+                  "absolute top-4 right-4 text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full border shadow-sm",
                   t.badgeColor === "emerald" 
-                    ? "bg-emerald-500/10 text-emerald-400" 
-                    : "bg-blue-500/10 text-blue-400"
+                    ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" 
+                    : "bg-blue-500/10 text-blue-500 border-blue-500/20"
                 )}>
                   {t.badge}
                 </span>
               )}
+
+              {selected === t.id && (
+                <div className="absolute top-4 left-4 h-6 w-6 rounded-full bg-primary flex items-center justify-center text-primary-foreground shadow-lg">
+                  <Check className="h-3 w-3 stroke-[3px]" />
+                </div>
+              )}
             </div>
-            <div className="p-3">
-              <p className="text-[12px] font-medium text-foreground">{t.name}</p>
-              <p className="text-[11px] text-muted-foreground">{t.tag}</p>
+
+            <div className="p-5 space-y-1">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-bold text-foreground">{t.name}</p>
+                {t.type === "resume" ? <FileText className="h-3 w-3 text-muted-foreground" /> : <Mail className="h-3 w-3 text-muted-foreground" />}
+              </div>
+              <p className="text-xs text-muted-foreground font-medium">{t.tag}</p>
             </div>
-          </div>
+          </motion.div>
         ))}
       </div>
 
-      {selected && (
-        <div className="mt-5 flex items-center justify-between px-4 py-3 rounded-lg border border-blue-500/20 bg-blue-500/5">
-          <span className="text-sm text-blue-400 flex items-center gap-2">
-            <Check className="w-4 h-4" />
-            Template selected — AI will pre-fill your profile data.
-          </span>
-          <Link href={TEMPLATES.find(t => t.id === selected)?.href || "#"}>
-            <button className="text-xs font-medium text-foreground border border-border rounded-md px-3 py-1.5 hover:bg-muted transition-colors">
-              Use Template →
-            </button>
-          </Link>
-        </div>
-      )}
+      <AnimatePresence>
+        {selected && (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="p-6 rounded-3xl border border-primary/20 bg-primary/[0.02] flex flex-col sm:flex-row items-center justify-between gap-6"
+          >
+            <div className="flex items-center gap-4 text-center sm:text-left">
+              <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+                <Check className="h-6 w-6 stroke-[3px]" />
+              </div>
+              <div>
+                <p className="font-bold text-foreground">Template Selected</p>
+                <p className="text-xs text-muted-foreground">Proceed to build your {TEMPLATES.find(t => t.id === selected)?.type === "resume" ? "resume" : "cover letter"} with AI filling.</p>
+              </div>
+            </div>
+            
+            <Link href={TEMPLATES.find(t => t.id === selected)?.href || "#"} className="w-full sm:w-auto">
+              <button className="w-full sm:w-auto px-8 py-3 rounded-2xl bg-primary text-primary-foreground font-bold text-sm shadow-lg shadow-primary/20 hover:scale-105 transition-all flex items-center justify-center gap-2">
+                Continue to Builder
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </Link>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

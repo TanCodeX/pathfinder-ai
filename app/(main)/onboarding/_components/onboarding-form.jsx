@@ -4,8 +4,9 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
+import { Loader2, Sparkles, User, Briefcase, GraduationCap, Award, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Card,
   CardContent,
@@ -35,10 +36,10 @@ const BIO_MAX = 500;
 
 const getQualityHint = (length, max) => {
   if (length === 0) return null;
-  if (length > max) return { text: "🔴 Exceeds limit — please shorten", color: "text-destructive" };
-  if (length < 30) return { text: "🔴 Too short — add more detail", color: "text-destructive" };
-  if (length < 100) return { text: "🟡 Getting there...", color: "text-yellow-500" };
-  return { text: "🟢 Looks good!", color: "text-green-500" };
+  if (length > max) return { text: "Too long", color: "text-destructive" };
+  if (length < 30) return { text: "Needs detail", color: "text-muted-foreground" };
+  if (length < 100) return { text: "Getting there", color: "text-primary/70" };
+  return { text: "Perfect!", color: "text-emerald-500 font-bold" };
 };
 
 const OnboardingForm = ({ industries }) => {
@@ -78,166 +79,221 @@ const OnboardingForm = ({ industries }) => {
   };
 
   useEffect(() => {
-    if (updateResult?.success && !updateLoading) {
-      toast.success("Profile completed successfully!");
-      router.push("/dashboard");
+    if (updateResult && !updateLoading) {
+      toast.success("Profile built successfully!");
+      router.replace("/dashboard");
       router.refresh();
     }
-  }, [updateResult, updateLoading]);
+  }, [updateResult, updateLoading, router]);
 
   const watchIndustry = watch("industry");
   const bioHint = getQualityHint(bioLength, BIO_MAX);
   const isOverLimit = bioLength > BIO_MAX;
 
   return (
-    <div className="flex items-center justify-center bg-background">
-      <Card className="w-full max-w-lg mt-10 mx-2">
-        <CardHeader>
-          <CardTitle className="gradient-title text-4xl">
-            Complete Your Profile
-          </CardTitle>
-          <CardDescription>
-            Select your industry to get personalized career insights and
-            recommendations.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="industry">Industry</Label>
-              <Select
-                onValueChange={(value) => {
-                  setValue("industry", value);
-                  setSelectedIndustry(industries.find((ind) => ind.id === value));
-                  setValue("subIndustry", "");
-                }}
-              >
-                <SelectTrigger id="industry">
-                  <SelectValue placeholder="Select an industry" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    <SelectLabel>Industries</SelectLabel>
-                    {industries.map((ind) => (
-                      <SelectItem key={ind.id} value={ind.id}>
-                        {ind.name}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-              {errors.industry && (
-                <p className="text-sm text-red-500">{errors.industry.message}</p>
-              )}
-            </div>
+    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-4 md:p-8 bg-background relative overflow-hidden">
+      {/* Background Decorative Blob */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl h-full -z-10 opacity-20 pointer-events-none">
+        <div className="absolute top-0 left-0 w-64 h-64 bg-primary/30 rounded-full blur-[100px] animate-pulse-slow" />
+        <div className="absolute bottom-0 right-0 w-64 h-64 bg-purple-500/30 rounded-full blur-[100px] animate-pulse-slow" style={{ animationDelay: "2s" }} />
+      </div>
 
-            {watchIndustry && (
-              <div className="space-y-2">
-                <Label htmlFor="subIndustry">Specialization</Label>
-                <Select onValueChange={(value) => setValue("subIndustry", value)}>
-                  <SelectTrigger id="subIndustry">
-                    <SelectValue placeholder="Select your specialization" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      <SelectLabel>Specializations</SelectLabel>
-                      {selectedIndustry?.subIndustries.map((sub) => (
-                        <SelectItem key={sub} value={sub}>
-                          {sub}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-                {errors.subIndustry && (
-                  <p className="text-sm text-red-500">{errors.subIndustry.message}</p>
-                )}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        className="w-full max-w-2xl"
+      >
+        <Card className="rounded-[2.5rem] border-border shadow-2xl bg-card/80 backdrop-blur-xl overflow-hidden">
+          <div className="h-2 bg-gradient-to-r from-primary via-purple-500 to-pink-500 w-full" />
+          
+          <CardHeader className="p-8 md:p-12 text-center space-y-4">
+            <div className="mx-auto w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mb-2">
+              <Sparkles className="h-8 w-8" />
+            </div>
+            <div className="space-y-2">
+              <CardTitle className="text-3xl md:text-5xl font-black tracking-tight text-foreground">
+                Build Your <span className="text-gradient-primary">AI Profile</span>
+              </CardTitle>
+              <CardDescription className="text-base md:text-lg font-medium text-muted-foreground">
+                Let&apos;s personalize your career journey with precision data.
+              </CardDescription>
+            </div>
+          </CardHeader>
+
+          <CardContent className="p-8 md:p-12 pt-0">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Industry Selection */}
+                <div className="space-y-3">
+                  <Label htmlFor="industry" className="text-xs font-bold uppercase tracking-widest flex items-center gap-2">
+                    <Briefcase className="h-3 w-3 text-primary" />
+                    Industry
+                  </Label>
+                  <Select
+                    onValueChange={(value) => {
+                      setValue("industry", value);
+                      setSelectedIndustry(industries.find((ind) => ind.id === value));
+                      setValue("subIndustry", "");
+                    }}
+                  >
+                    <SelectTrigger id="industry" className="h-12 rounded-xl bg-background/50 border-border focus:ring-primary/20">
+                      <SelectValue placeholder="Select Industry" />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-xl border-border shadow-xl">
+                      <SelectGroup>
+                        <SelectLabel>Available Sectors</SelectLabel>
+                        {industries.map((ind) => (
+                          <SelectItem key={ind.id} value={ind.id} className="rounded-lg m-1">
+                            {ind.name}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                  {errors.industry && (
+                    <p className="text-[10px] font-bold text-destructive uppercase tracking-wide">{errors.industry.message}</p>
+                  )}
+                </div>
+
+                {/* Sub-Industry Selection */}
+                <AnimatePresence mode="wait">
+                  {watchIndustry ? (
+                    <motion.div
+                      key="subIndustry"
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: 20 }}
+                      className="space-y-3"
+                    >
+                      <Label htmlFor="subIndustry" className="text-xs font-bold uppercase tracking-widest flex items-center gap-2">
+                        <GraduationCap className="h-3 w-3 text-primary" />
+                        Specialization
+                      </Label>
+                      <Select onValueChange={(value) => setValue("subIndustry", value)}>
+                        <SelectTrigger id="subIndustry" className="h-12 rounded-xl bg-background/50 border-border">
+                          <SelectValue placeholder="Select Specialization" />
+                        </SelectTrigger>
+                        <SelectContent className="rounded-xl border-border shadow-xl">
+                          <SelectGroup>
+                            <SelectLabel>Sub-sectors</SelectLabel>
+                            {selectedIndustry?.subIndustries.map((sub) => (
+                              <SelectItem key={sub} value={sub} className="rounded-lg m-1">
+                                {sub}
+                              </SelectItem>
+                            ))}
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                      {errors.subIndustry && (
+                        <p className="text-[10px] font-bold text-destructive uppercase tracking-wide">{errors.subIndustry.message}</p>
+                      )}
+                    </motion.div>
+                  ) : (
+                    <div className="h-[76px] rounded-xl border border-dashed border-border bg-muted/20 flex items-center justify-center p-4">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Select industry first</p>
+                    </div>
+                  )}
+                </AnimatePresence>
               </div>
-            )}
 
-            <div className="space-y-2">
-              <Label htmlFor="experience">Years of Experience</Label>
-              <Input
-                id="experience"
-                type="number"
-                min="0"
-                max="50"
-                placeholder="Enter years of experience"
-                {...register("experience")}
-              />
-              {errors.experience && (
-                <p className="text-sm text-red-500">{errors.experience.message}</p>
-              )}
-            </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Experience */}
+                <div className="space-y-3">
+                  <Label htmlFor="experience" className="text-xs font-bold uppercase tracking-widest flex items-center gap-2">
+                    <Award className="h-3 w-3 text-primary" />
+                    Years Experience
+                  </Label>
+                  <Input
+                    id="experience"
+                    type="number"
+                    min="0"
+                    max="50"
+                    placeholder="e.g. 5"
+                    className="h-12 rounded-xl bg-background/50 border-border"
+                    {...register("experience")}
+                  />
+                  {errors.experience && (
+                    <p className="text-[10px] font-bold text-destructive uppercase tracking-wide">{errors.experience.message}</p>
+                  )}
+                </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="skills">Skills</Label>
-              <Input
-                id="skills"
-                placeholder="e.g., Python, JavaScript, Project Management"
-                {...register("skills")}
-              />
-              <p className="text-sm text-muted-foreground">
-                Separate multiple skills with commas
-              </p>
-              {errors.skills && (
-                <p className="text-sm text-red-500">{errors.skills.message}</p>
-              )}
-            </div>
+                {/* Skills */}
+                <div className="space-y-3">
+                  <Label htmlFor="skills" className="text-xs font-bold uppercase tracking-widest flex items-center gap-2">
+                    <Sparkles className="h-3 w-3 text-primary" />
+                    Key Skills
+                  </Label>
+                  <Input
+                    id="skills"
+                    placeholder="e.g. React, Python, UI Design"
+                    className="h-12 rounded-xl bg-background/50 border-border"
+                    {...register("skills")}
+                  />
+                  {errors.skills && (
+                    <p className="text-[10px] font-bold text-destructive uppercase tracking-wide">{errors.skills.message}</p>
+                  )}
+                </div>
+              </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="bio">Professional Bio</Label>
-              <Textarea
-                id="bio"
-                placeholder="Tell us about your professional background..."
-                className={cn(
-                  "h-32",
-                  isOverLimit && "border-destructive focus-visible:ring-destructive"
-                )}
-                {...register("bio", {
-                  onChange: (e) => setBioLength(e.target.value.length),
-                })}
-              />
-
-              {/* Character counter + quality hint */}
-              <div className="flex items-center justify-between text-xs">
-                <span className={cn(
-                  "transition-colors",
-                  isOverLimit ? "text-destructive font-medium" :
-                  bioLength > BIO_MAX * 0.8 ? "text-yellow-500" :
-                  "text-muted-foreground"
-                )}>
-                  {bioLength} / {BIO_MAX} characters
-                </span>
-                {bioHint && (
-                  <span className={cn("transition-colors", bioHint.color)}>
-                    {bioHint.text}
+              {/* Bio */}
+              <div className="space-y-3">
+                <div className="flex justify-between items-end">
+                  <Label htmlFor="bio" className="text-xs font-bold uppercase tracking-widest flex items-center gap-2">
+                    <User className="h-3 w-3 text-primary" />
+                    Professional Bio
+                  </Label>
+                  <span className={cn(
+                    "text-[10px] font-bold uppercase tracking-widest",
+                    isOverLimit ? "text-destructive" : "text-muted-foreground"
+                  )}>
+                    {bioLength} / {BIO_MAX}
                   </span>
+                </div>
+                <Textarea
+                  id="bio"
+                  placeholder="Summarize your professional journey and key achievements..."
+                  className={cn(
+                    "h-40 rounded-2xl bg-background/50 border-border focus:ring-primary/20 p-4 leading-relaxed",
+                    isOverLimit && "border-destructive focus-visible:ring-destructive"
+                  )}
+                  {...register("bio", {
+                    onChange: (e) => setBioLength(e.target.value.length),
+                  })}
+                />
+                <div className="flex justify-end">
+                  {bioHint && (
+                    <span className={cn("text-[10px] uppercase tracking-widest font-bold", bioHint.color)}>
+                      {bioHint.text}
+                    </span>
+                  )}
+                </div>
+                {errors.bio && (
+                  <p className="text-[10px] font-bold text-destructive uppercase tracking-wide">{errors.bio.message}</p>
                 )}
               </div>
 
-              {errors.bio && (
-                <p className="text-sm text-red-500">{errors.bio.message}</p>
-              )}
-            </div>
-
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={updateLoading || isOverLimit}
-            >
-              {updateLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                "Complete Profile"
-              )}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+              <Button
+                type="submit"
+                className="w-full h-14 rounded-2xl text-lg font-bold shadow-xl shadow-primary/10 group"
+                disabled={updateLoading || isOverLimit}
+              >
+                {updateLoading ? (
+                  <div className="flex items-center gap-3">
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    Processing...
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    Finalize Profile
+                    <ChevronRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+                  </div>
+                )}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      </motion.div>
     </div>
   );
 };

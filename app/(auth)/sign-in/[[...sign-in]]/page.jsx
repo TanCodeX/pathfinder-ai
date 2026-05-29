@@ -1,11 +1,12 @@
-import InteractiveBackground from "@/components/Background";
 import { SignIn } from "@clerk/nextjs";
 
 export default function Page() {
   return (
-    <>
-      <InteractiveBackground isDarkMode={false} />
-      <SignIn />
-    </>
+    <div className="relative min-h-screen flex items-center justify-center">
+      <SignIn
+        fallbackRedirectUrl="/onboarding"
+        signUpFallbackRedirectUrl="/onboarding"
+      />
+    </div>
   );
 }

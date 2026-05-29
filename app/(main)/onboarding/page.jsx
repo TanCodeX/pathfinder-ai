@@ -4,8 +4,11 @@ import OnboardingForm from "./_components/onboarding-form";
 import { getUserOnboardingStatus } from "@/actions/user";
 
 export default async function OnboardingPage() {
-  // Check if user is already onboarded
-  const { isOnboarded } = await getUserOnboardingStatus();
+  const { isOnboarded, isSignedIn } = await getUserOnboardingStatus();
+
+  if (!isSignedIn) {
+    redirect("/sign-in");
+  }
 
   if (isOnboarded) {
     redirect("/dashboard");

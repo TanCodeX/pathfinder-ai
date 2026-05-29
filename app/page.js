@@ -7,10 +7,9 @@ import { motion } from "framer-motion";
 import { TypeAnimation } from "react-type-animation";
 import {
   ArrowRight,
-  Trophy,
-  Target,
   Sparkles,
-  CheckCircle2,
+  ChevronRight,
+  Quote,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -27,97 +26,69 @@ import { testimonial } from "@/data/testimonial";
 import { faqs } from "@/data/faqs";
 import { howItWorks } from "@/data/howItWorks";
 
-import { useTheme } from "next-themes";
-import InteractiveBackground from "@/components/Background";
 import HeroSection from "@/components/Herosection";
 import HeroStats from "@/components/HeroStats";
 import ScrollToTop from "@/components/ui/Scrolltotop";
 
-
-/* ────────────────────────────────────────────────────────────────── */
-/* Helper animation configs                                           */
 const fadeUp = (delay = 0) => ({
-  initial: { opacity: 0, y: 30 },
+  initial: { opacity: 0, y: 20 },
   whileInView: { opacity: 1, y: 0 },
-  transition: { duration: 0.6, delay },
-  viewport: { once: true },
+  transition: { duration: 0.8, delay, ease: [0.16, 1, 0.3, 1] },
+  viewport: { once: true, margin: "-50px" },
 });
 
-
-
-/* ────────────────────────────────────────────────────────────────── */
-
 export default function LandingPage() {
-  const { resolvedTheme } = useTheme();
-const isDarkMode = resolvedTheme === "dark";
-
   return (
-    <>
+    <div className="relative overflow-hidden">
 
-    <InteractiveBackground isDarkMode={isDarkMode} />
-      {/* Decorative grid bg */}
-      <div className="grid-background" />
-
-      {/* ───────────────  HERO  ─────────────── */}
       <HeroSection />
 
-      {/* ─────────────  FEATURES  ───────────── */}
- <section id="features" className="w-full py-12 md:py-24 lg:py-32 scroll-mt-20">
-  <div className="container mx-auto px-4 md:px-6">
-    <motion.h2
-      {...fadeUp()}
-      className="mb-12 text-center text-3xl font-bold tracking-tighter md:text-4xl"
-    >
-      Powerful Features for Your{" "}
-      <span className="bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent">
-        Career Growth
-      </span>
-    </motion.h2>
-
-    <div className="mx-auto grid max-w-6xl grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 items-stretch">
-      {features.map((f, i) => {
-        const Icon = f.icon;
-        return (
-          <motion.div
-            key={f.title}
-            {...fadeUp(i * 0.1)}
-            whileHover={{ scale: 1.03, y: -5 }}
-            className="h-full group"
-          >
-            <Card
-              className={`h-full min-h-[320px] border-2 border-border transition-all duration-300 ${f.borderHover} hover:shadow-2xl ${f.shadowHover} bg-card relative overflow-hidden`}
-            >
-              {/* Gradient overlay on hover */}
-              <div
-                className={`absolute inset-0 bg-gradient-to-br ${f.gradient} opacity-0 group-hover:opacity-5 transition-opacity duration-500`}
-              />
-
-              <CardContent className="flex h-full flex-col items-center gap-4 pt-8 text-center relative z-10">
-                {/* Icon with colored background */}
-                <div
-                  className={`mb-2 p-4 rounded-2xl ${f.bgLight} ${f.bgDark} transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6`}
-                >
-                  <Icon className={`w-10 h-10 ${f.textColor}`} />
-                </div>
-
-                <h3 className="text-xl font-bold leading-snug">
-                  {f.title}
-                </h3>
-
-                <p className="text-muted-foreground leading-relaxed">
-                  {f.description}
-                </p>
-              </CardContent>
-            </Card>
+      {/* ─────────────  FEATURES SECTION  ───────────── */}
+      <section id="features" className="relative py-24 md:py-32 scroll-mt-20">
+        <div className="container mx-auto px-4 md:px-6">
+          <motion.div {...fadeUp()} className="max-w-3xl mx-auto text-center mb-20 space-y-4">
+            <h2 className="text-sm font-bold uppercase tracking-[0.2em] text-primary">Features</h2>
+            <h3 className="text-3xl md:text-5xl font-extrabold tracking-tight text-foreground">
+              Built for the <span className="text-gradient-primary">Modern Professional</span>
+            </h3>
+            <p className="text-lg text-muted-foreground leading-relaxed">
+              Experience a suite of AI tools meticulously designed to accelerate your career growth and streamline your success.
+            </p>
           </motion.div>
-        );
-      })}
-    </div>
-  </div>
-</section>
 
-      {/* ───────────────  STATS  ────────────── */}
-      <section id="stats" className="w-full  py-12 md:py-24 scroll-mt-20">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {features.map((f, i) => {
+              const Icon = f.icon;
+              return (
+                <motion.div key={f.title} {...fadeUp(i * 0.1)} className="group h-full">
+                  <div className="relative h-full p-8 rounded-[2rem] glass border border-white/20 dark:border-white/10 hover:border-primary/50 transition-all duration-500 overflow-hidden">
+                    {/* Hover Glow */}
+                    <div className="absolute -top-24 -right-24 w-48 h-48 bg-primary/10 rounded-full blur-3xl group-hover:bg-primary/20 transition-all duration-500" />
+                    
+                    <div className="relative z-10 space-y-6">
+                      <div className={`w-14 h-14 rounded-2xl flex items-center justify-center bg-primary/10 text-primary group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500`}>
+                        <Icon className="w-7 h-7" />
+                      </div>
+                      
+                      <div className="space-y-3">
+                        <h4 className="text-xl font-bold tracking-tight text-foreground">{f.title}</h4>
+                        <p className="text-muted-foreground leading-relaxed text-sm">{f.description}</p>
+                      </div>
+
+                      <div className="pt-4 flex items-center text-xs font-bold uppercase tracking-widest text-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        Explore Feature <ChevronRight className="ml-1 h-3 w-3" />
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ───────────────  STATS SECTION  ────────────── */}
+      <section id="stats" className="py-24 md:py-32 scroll-mt-20 bg-muted/30">
         <div className="container mx-auto px-4 md:px-6">
           <motion.div {...fadeUp()}>
             <HeroStats />
@@ -125,139 +96,67 @@ const isDarkMode = resolvedTheme === "dark";
         </div>
       </section>
 
-      {/* ────────────  HOW‑IT‑WORKS  ────────── */}
-      <section id="how-it-works" className="w-full py-12 md:py-24 scroll-mt-20">
-  <div className="container mx-auto px-4 md:px-6">
-    <motion.div
-      {...fadeUp()}
-      className="mx-auto mb-16 max-w-3xl text-center"
-    >
-      <h2 className="mb-4 text-3xl font-bold tracking-tight md:text-4xl">
-        How It{" "}
-        <span className="bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent">
-          Works
-        </span>
-      </h2>
-      <p className="text-muted-foreground text-lg">
-        Four simple steps to accelerate your career growth
-      </p>
-    </motion.div>
-
-    <div className="mx-auto max-w-6xl relative">
-      {/* Connecting dotted line - desktop only */}
-      <div className="hidden lg:block absolute top-10 left-[12.5%] right-[12.5%] h-0.5 z-0">
-        <div className="w-full h-full border-t-2 border-dashed border-purple-500/30" />
-      </div>
-
-      <div className="relative grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4 z-10">
-        {howItWorks.map((step, i) => {
-          const stepColors = [
-            {
-              bg: "bg-purple-100 dark:bg-purple-500/10",
-              text: "text-purple-600 dark:text-purple-400",
-              border: "border-purple-500/30",
-              shadow: "hover:shadow-purple-500/30",
-            },
-            {
-              bg: "bg-blue-100 dark:bg-blue-500/10",
-              text: "text-blue-600 dark:text-blue-400",
-              border: "border-blue-500/30",
-              shadow: "hover:shadow-blue-500/30",
-            },
-            {
-              bg: "bg-green-100 dark:bg-green-500/10",
-              text: "text-green-600 dark:text-green-400",
-              border: "border-green-500/30",
-              shadow: "hover:shadow-green-500/30",
-            },
-            {
-              bg: "bg-orange-100 dark:bg-orange-500/10",
-              text: "text-orange-600 dark:text-orange-400",
-              border: "border-orange-500/30",
-              shadow: "hover:shadow-orange-500/30",
-            },
-          ];
-          const color = stepColors[i % 4];
-
-          return (
-            <motion.div
-              key={step.title}
-              {...fadeUp(i * 0.15)}
-              whileHover={{ y: -8 }}
-              className="group flex flex-col items-center space-y-4 text-center relative"
-            >
-              {/* Step number badge */}
-              <div className="absolute -top-3 -right-3 md:relative md:top-0 md:right-0 md:mb-2 z-20">
-                <div
-                  className={`flex h-7 w-7 items-center justify-center rounded-full bg-background border-2 ${color.border} ${color.text} text-sm font-bold shadow-md`}
-                >
-                  {i + 1}
-                </div>
-              </div>
-
-              {/* Icon circle */}
-              <div
-                className={`flex h-20 w-20 items-center justify-center rounded-2xl ${color.bg} transition-all duration-300 group-hover:scale-110 group-hover:rotate-6 group-hover:shadow-2xl ${color.shadow} relative z-10`}
-              >
-                <div className={color.text}>{step.icon}</div>
-              </div>
-
-              {/* Title */}
-              <h3 className="text-xl font-semibold">{step.title}</h3>
-
-              {/* Description */}
-              <p className="text-muted-foreground leading-relaxed px-2">
-                {step.description}
-              </p>
-            </motion.div>
-          );
-        })}
-      </div>
-    </div>
-  </div>
-</section>
-
-      {/* ─────────────  TESTIMONIALS  ───────────── */}
-      <section id = "feedback" className="w-full  py-12 md:py-24">
+      {/* ────────────  HOW IT WORKS SECTION  ────────── */}
+      <section id="how-it-works" className="py-24 md:py-32 scroll-mt-20">
         <div className="container mx-auto px-4 md:px-6">
-          <motion.h2
-            {...fadeUp()}
-            className="mb-12 text-center text-3xl font-bold"
-          >
-            What Our Users Say
-          </motion.h2>
+          <motion.div {...fadeUp()} className="max-w-3xl mx-auto text-center mb-20 space-y-4">
+            <h2 className="text-sm font-bold uppercase tracking-[0.2em] text-primary">Process</h2>
+            <h3 className="text-3xl md:text-5xl font-extrabold tracking-tight text-foreground">
+              Four Steps to <span className="text-gradient-primary">Elevate Your Career</span>
+            </h3>
+          </motion.div>
 
-          <div className="mx-auto grid max-w-6xl grid-cols-1 gap-8 md:grid-cols-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 relative">
+            {/* Connection Line */}
+            <div className="hidden lg:block absolute top-1/2 left-0 w-full h-px bg-gradient-to-r from-transparent via-border to-transparent -translate-y-1/2 -z-10" />
+
+            {howItWorks.map((step, i) => (
+              <motion.div key={step.title} {...fadeUp(i * 0.15)} className="relative flex flex-col items-center text-center space-y-6">
+                <div className="relative">
+                  <div className="h-20 w-20 rounded-[2.5rem] bg-background border border-border flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform duration-500">
+                    <div className="text-primary">{step.icon}</div>
+                  </div>
+                  <div className="absolute -top-2 -right-2 h-8 w-8 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center shadow-lg border-2 border-background">
+                    {i + 1}
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <h4 className="text-lg font-bold tracking-tight">{step.title}</h4>
+                  <p className="text-sm text-muted-foreground leading-relaxed max-w-[200px]">{step.description}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─────────────  TESTIMONIALS SECTION  ───────────── */}
+      <section id="feedback" className="py-24 md:py-32 bg-muted/30 overflow-hidden relative">
+        <div className="container mx-auto px-4 md:px-6 relative z-10">
+          <motion.div {...fadeUp()} className="text-center mb-20">
+            <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight">Loved by Professionals</h2>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {testimonial.map((t, i) => (
               <motion.div key={i} {...fadeUp(i * 0.1)}>
-                <Card className="bg-background">
-                  <CardContent className="pt-6">
-                    <div className="flex flex-col space-y-4">
-                      <div className="mb-4 flex items-center space-x-4">
-                        <Image
-                          src={t.image}
-                          alt={t.author}
-                          width={40}
-                          height={40}
-                          className="h-12 w-12 rounded-full border-2 border-primary/20 object-cover"
-                        />
-                        <div>
-                          <p className="font-semibold">{t.author}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {t.role}
-                          </p>
-                          <p className="text-sm text-primary">{t.company}</p>
-                        </div>
+                <Card className="h-full rounded-3xl border-border bg-background shadow-sm hover:shadow-xl transition-all duration-300">
+                  <CardContent className="p-8 space-y-6 flex flex-col h-full">
+                    <Quote className="h-10 w-10 text-primary/20" />
+                    <p className="text-muted-foreground leading-relaxed flex-grow italic">&ldquo;{t.quote}&rdquo;</p>
+                    <div className="flex items-center gap-4 pt-4 border-t border-border">
+                      <Image
+                        src={t.image}
+                        alt={t.author}
+                        width={48}
+                        height={48}
+                        className="rounded-full ring-2 ring-primary/20 object-cover"
+                      />
+                      <div>
+                        <p className="font-bold text-foreground leading-none mb-1">{t.author}</p>
+                        <p className="text-xs text-muted-foreground font-medium">{t.role} @ {t.company}</p>
                       </div>
-                      <blockquote className="relative italic text-muted-foreground">
-                        <span className="absolute -top-4 -left-2 text-3xl text-primary">
-                          &ldquo;
-                        </span>
-                        {t.quote}
-                        <span className="absolute -bottom-4 text-3xl text-primary">
-                          &rdquo;
-                        </span>
-                      </blockquote>
                     </div>
                   </CardContent>
                 </Card>
@@ -267,43 +166,24 @@ const isDarkMode = resolvedTheme === "dark";
         </div>
       </section>
 
-      {/* ───────────────  FAQ  ─────────────── */}
-      <section id = "question" className="w-full py-12 md:py-24">
+      {/* ───────────────  FAQ SECTION  ─────────────── */}
+      <section id="question" className="py-24 md:py-32 scroll-mt-20">
         <div className="container mx-auto px-4 md:px-6">
-          <motion.div
-            {...fadeUp()}
-            className="mx-auto mb-12 max-w-3xl text-center"
-          >
-            {/* Animated headline using react‑type‑animation */}
-            <h2 className="mb-4 text-3xl font-bold">
-              <TypeAnimation
-                sequence={[
-                  "Frequently Asked Questions",
-                  2500,
-                  "Need an answer? 🤔",
-                  2500,
-                ]}
-                speed={50}
-                wrapper="span"
-                repeat={Infinity}
-              />
-            </h2>
-            <p className="text-muted-foreground">
-              Find answers to common questions about our platform
-            </p>
+          <motion.div {...fadeUp()} className="max-w-3xl mx-auto text-center mb-16 space-y-4">
+            <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight">Got Questions?</h2>
+            <p className="text-muted-foreground">Everything you need to know about PathFinder AI</p>
           </motion.div>
 
-          <motion.div
-            {...fadeUp(0.2)}
-            className="mx-auto max-w-3xl"
-          >
-            <Accordion type="single" collapsible className="w-full">
+          <motion.div {...fadeUp(0.2)} className="max-w-3xl mx-auto">
+            <Accordion type="single" collapsible className="w-full space-y-4">
               {faqs.map((faq, index) => (
-                <AccordionItem key={index} value={`item-${index}`}>
-                  <AccordionTrigger className="text-left">
+                <AccordionItem key={index} value={`item-${index}`} className="border rounded-2xl px-6 bg-background/50 backdrop-blur-sm">
+                  <AccordionTrigger className="text-left font-bold py-5 hover:text-primary transition-colors">
                     {faq.question}
                   </AccordionTrigger>
-                  <AccordionContent>{faq.answer}</AccordionContent>
+                  <AccordionContent className="text-muted-foreground pb-5 leading-relaxed">
+                    {faq.answer}
+                  </AccordionContent>
                 </AccordionItem>
               ))}
             </Accordion>
@@ -311,36 +191,39 @@ const isDarkMode = resolvedTheme === "dark";
         </div>
       </section>
 
-      {/* ───────────────  CTA  ─────────────── */}
-      <section id = "contact" className="w-full">
+      {/* ───────────────  CTA SECTION  ─────────────── */}
+      <section id="contact" className="py-24 px-4 md:px-6">
         <motion.div
           {...fadeUp()}
-          className="gradient mx-auto rounded-lg py-24"
+          className="max-w-5xl mx-auto relative rounded-[3rem] overflow-hidden bg-primary p-12 md:p-24 text-center text-primary-foreground shadow-2xl shadow-primary/20"
         >
-          <div className="mx-auto flex max-w-3xl flex-col items-center space-y-4 text-center text-black dark:text-white">
-            <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl text-black dark:text-white">
-              Ready to Accelerate Your Career?
+          {/* Decorative Pattern */}
+          <div className="absolute inset-0 opacity-10 pointer-events-none grid-background" />
+          
+          <div className="relative z-10 space-y-8">
+            <h2 className="text-3xl md:text-6xl font-extrabold tracking-tight leading-tight">
+              Ready to Accelerate <br /> Your Career Journey?
             </h2>
-            <p className="mx-auto max-w-[600px]  md:text-xl text-black dark:text-white">
-              Join thousands of professionals who are advancing their careers
-              with AI‑powered guidance.
+            <p className="text-lg md:text-xl text-primary-foreground/80 max-w-2xl mx-auto leading-relaxed">
+              Join thousands of ambitious professionals using AI to land their dream jobs and master their industry.
             </p>
-            <Link href="/dashboard" passHref>
-              <Button
-                size="lg"
-                variant="secondary"
-                className="mt-5 h-11 animate-bounce bg-black text-white dark:bg-white dark:text-black dark:hover:bg-white/80"
-              >
-                Start Your Journey Today
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </Link>
+            <div className="pt-6">
+              <Link href="/dashboard">
+                <Button
+                  size="lg"
+                  variant="secondary"
+                  className="h-16 px-10 rounded-2xl text-lg font-bold shadow-xl hover:scale-105 transition-transform duration-300 group"
+                >
+                  Start Your Journey Today
+                  <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+                </Button>
+              </Link>
+            </div>
           </div>
         </motion.div>
       </section>
 
-      {/* ───────────────  Scroll To Top  ─────────────── */}
       <ScrollToTop />
-    </>
+    </div>
   );
 }
