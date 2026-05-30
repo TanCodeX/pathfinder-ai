@@ -5,6 +5,7 @@ import { auth } from "@clerk/nextjs/server";
 import { generateGeminiContent } from "@/lib/gemini";
 import { cachedGenerateGeminiContent, QUIZ_CACHE_TTL_MS, generateCacheKey } from "@/lib/cache";
 import { buildSecurePrompt } from "@/lib/prompt-safety";
+import { parseAIJson } from "@/lib/validate";
 
 // Fallback MCQ questions in case Gemini generation fails
 const FALLBACK_QUESTIONS = [
@@ -185,13 +186,8 @@ Return ONLY a valid JSON object matching this schema. Do not output any markdown
   });
 
   try {
-    const result = await cachedGenerateGeminiContent(prompt, {}, {
-      key: generateCacheKey("quiz", user.industry || "software", normalizedSkills, category),
-      ttl: QUIZ_CACHE_TTL_MS,
-    });
-    const text = result.response.text();
-    const cleaned = text.replace(/```(?:json)?[\r\n]?/g, "").trim();
-    const quiz = JSON.parse(cleaned);
+    const result = await generateGeminiContent(prompt);
+    const quiz = parseAIJson(result.response.text());
 
     if (!quiz || !Array.isArray(quiz.questions) || quiz.questions.length === 0) {
       throw new Error("Invalid questions structure received from AI.");
