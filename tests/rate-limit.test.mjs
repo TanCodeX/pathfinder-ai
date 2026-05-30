@@ -1,10 +1,22 @@
-import { expect, it } from "vitest";
+import { afterEach, expect, it } from "vitest";
 
 import { enforceRateLimit } from "../lib/rate-limit.js";
 import {
   createMemoryRateLimitStore,
   createRateLimitStore,
 } from "../lib/rate-limit/store.js";
+
+const ORIGINAL_NODE_ENV = process.env.NODE_ENV;
+const ORIGINAL_REDIS_URL = process.env.REDIS_URL;
+
+afterEach(() => {
+  process.env.NODE_ENV = ORIGINAL_NODE_ENV;
+  if (ORIGINAL_REDIS_URL == null) {
+    delete process.env.REDIS_URL;
+  } else {
+    process.env.REDIS_URL = ORIGINAL_REDIS_URL;
+  }
+});
 
 it("memory store evicts stale buckets", async () => {
   const store = createMemoryRateLimitStore({ bucketTtlMs: 1000 });
@@ -34,6 +46,30 @@ it("factory can create a redis store lazily", () => {
   });
 
   expect(store.kind).toBe("redis");
+});
+
+it("factory fails fast in production when REDIS_URL is missing", () => {
+  process.env.NODE_ENV = "production";
+  delete process.env.REDIS_URL;
+
+  expect(() =>
+    createRateLimitStore({
+      driver: "auto",
+      redisUrl: undefined,
+    })
+  ).toThrow(/REDIS_URL is required in production/i);
+});
+
+it("factory rejects memory driver in production", () => {
+  process.env.NODE_ENV = "production";
+  process.env.REDIS_URL = "redis://localhost:6379";
+
+  expect(() =>
+    createRateLimitStore({
+      driver: "memory",
+      redisUrl: process.env.REDIS_URL,
+    })
+  ).toThrow(/RATE_LIMIT_STORE=memory is not allowed in production/i);
 });
 
 it("rate limiter consumes burst capacity and then rejects", async () => {

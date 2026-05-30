@@ -151,7 +151,12 @@ NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/onboarding
 NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/onboarding
 
 GEMINI_API_KEY=your_gemini_api_key
+
+REDIS_URL=your_redis_connection_string
+RATE_LIMIT_STORE=auto
 ```
+
+> **Rate limiting in production:** Redis is required for consistent multi-instance throttling. In production, set `REDIS_URL` and keep `RATE_LIMIT_STORE=auto` (or set `RATE_LIMIT_STORE=redis`).
 
 ### 4. Set Up Prisma
 
