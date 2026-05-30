@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { getUserSettings } from "@/actions/settings";
+import { getUserOnboardingStatus } from "@/actions/user";
 import SettingsClient from "./_components/settings-client";
 import { Sparkles, Settings } from "lucide-react";
 
@@ -11,7 +12,10 @@ export default async function SettingsPage() {
     redirect("/sign-in");
   }
 
-  const settings = await getUserSettings(userId);
+  const [{ user }, settings] = await Promise.all([
+    getUserOnboardingStatus(),
+    getUserSettings(userId),
+  ]);
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
@@ -35,7 +39,7 @@ export default async function SettingsPage() {
 
         <div className="glass rounded-[2.5rem] p-1 border border-white/10 shadow-2xl overflow-hidden">
           <div className="bg-background/40 backdrop-blur-md rounded-[2.2rem] p-4 md:p-8">
-            <SettingsClient userId={userId} settings={settings} />
+            <SettingsClient userId={userId} user={user} settings={settings} />
           </div>
         </div>
       </div>

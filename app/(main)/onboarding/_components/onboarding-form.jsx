@@ -198,6 +198,37 @@ const OnboardingForm = ({ industries }) => {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-3">
+                  <Label htmlFor="currentRole" className="text-xs font-bold uppercase tracking-widest flex items-center gap-2">
+                    <User className="h-3 w-3 text-primary" />
+                    Current Role
+                  </Label>
+                  <Input
+                    id="currentRole"
+                    placeholder="e.g. Full Stack Developer"
+                    className="h-12 rounded-xl bg-background/50 border-border"
+                    {...register("currentRole")}
+                  />
+                </div>
+
+                <div className="space-y-3">
+                  <Label htmlFor="targetRole" className="text-xs font-bold uppercase tracking-widest flex items-center gap-2">
+                    <Briefcase className="h-3 w-3 text-primary" />
+                    Target Role
+                  </Label>
+                  <Input
+                    id="targetRole"
+                    placeholder="e.g. Senior Backend Engineer"
+                    className="h-12 rounded-xl bg-background/50 border-border"
+                    {...register("targetRole")}
+                  />
+                  {errors.targetRole && (
+                    <p className="text-[10px] font-bold text-destructive uppercase tracking-wide">{errors.targetRole.message}</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Experience */}
                 <div className="space-y-3">
                   <Label htmlFor="experience" className="text-xs font-bold uppercase tracking-widest flex items-center gap-2">
@@ -234,6 +265,19 @@ const OnboardingForm = ({ industries }) => {
                     <p className="text-[10px] font-bold text-destructive uppercase tracking-wide">{errors.skills.message}</p>
                   )}
                 </div>
+              </div>
+
+              <div className="space-y-3">
+                <Label htmlFor="careerGoals" className="text-xs font-bold uppercase tracking-widest flex items-center gap-2">
+                  <Sparkles className="h-3 w-3 text-primary" />
+                  Career Goals
+                </Label>
+                <Textarea
+                  id="careerGoals"
+                  placeholder="What role, growth, or transition are you working toward?"
+                  className="h-28 rounded-2xl bg-background/50 border-border focus:ring-primary/20 p-4 leading-relaxed"
+                  {...register("careerGoals")}
+                />
               </div>
 
               {/* Bio */}

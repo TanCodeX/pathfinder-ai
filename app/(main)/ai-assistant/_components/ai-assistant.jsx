@@ -32,7 +32,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import useStreamFetch from "@/hooks/use-stream-fetch";
 import StreamedText, { markdownComponents } from "@/components/streamed-text";
 import ReactMarkdown from "react-markdown";
@@ -65,9 +65,11 @@ export default function AIAssistant() {
   const [isSearching, setIsSearching] = useState(false);
   const [saveChatHistory, setSaveChatHistory] = useState(true);
   const [isLoadingPreferences, setIsLoadingPreferences] = useState(true);
+  const [debugContext, setDebugContext] = useState(null);
 
   const scrollRef = useRef(null);
   const { streamedText, isLoading, error, startStream, reset } = useStreamFetch();
+  const isDev = process.env.NODE_ENV !== "production";
 
   useEffect(() => {
     const handleResize = () => {
@@ -117,6 +119,7 @@ export default function AIAssistant() {
       if (res.ok) {
         setActiveConversationId(data.id);
         setMessages([]);
+        setDebugContext(null);
         await fetchConversations();
         return data.id;
       }
@@ -132,6 +135,7 @@ export default function AIAssistant() {
       if (activeConversationId === id) {
         setActiveConversationId(null);
         setMessages([]);
+        setDebugContext(null);
         reset();
       }
       fetchConversations();
@@ -181,6 +185,7 @@ export default function AIAssistant() {
     const streamResult = await startStream(trimmed, conversationId);
     if (streamResult?.status === "done" && streamResult.finalText?.trim()) {
       setMessages((prev) => [...prev, { role: "assistant", content: streamResult.finalText }]);
+      setDebugContext(streamResult.meta?.debug ?? null);
       reset();
     }
     if (saveChatHistory) fetchConversations();
@@ -332,6 +337,38 @@ export default function AIAssistant() {
             <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Neural Engine Online</span>
           </div>
         </header>
+
+        {isDev && debugContext && (
+          <div className="border-b border-border bg-card/60 px-6 py-4 backdrop-blur-xl">
+            <Card className="rounded-[1.75rem] border-primary/10 bg-background/80 shadow-lg">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-xs font-black uppercase tracking-[0.24em] text-primary">
+                  Injected Prompt Context
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="grid gap-4 pt-0 text-xs">
+                <details open className="rounded-2xl border border-border bg-muted/30 p-4">
+                  <summary className="cursor-pointer list-none font-bold uppercase tracking-[0.18em] text-foreground">
+                    Profile Context
+                  </summary>
+                  <pre className="mt-3 whitespace-pre-wrap break-words text-muted-foreground">
+                    {debugContext.profileContext}
+                  </pre>
+                </details>
+                {debugContext.recentTurns?.length > 0 && (
+                  <details className="rounded-2xl border border-border bg-muted/30 p-4">
+                    <summary className="cursor-pointer list-none font-bold uppercase tracking-[0.18em] text-foreground">
+                      Recent Turns
+                    </summary>
+                    <pre className="mt-3 whitespace-pre-wrap break-words text-muted-foreground">
+                      {debugContext.conversationContext}
+                    </pre>
+                  </details>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         {/* Messages */}
         <div 

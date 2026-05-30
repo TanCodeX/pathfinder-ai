@@ -7,6 +7,11 @@ export const onboardingSchema = z.object({
   subIndustry: z.string({
     required_error: "Please select a specialization",
   }),
+  currentRole: z.string().optional(),
+  targetRole: z.string({
+    required_error: "Please share your target role",
+  }),
+  careerGoals: z.string().optional(),
   bio: z.string().max(500).optional(),
   experience: z
     .string()

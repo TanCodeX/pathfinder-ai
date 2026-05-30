@@ -8,7 +8,7 @@ import { getIndustryInsightRefreshTime } from "@/lib/industry-insights";
 
 /**
  * Updates the current user's profile with industry and other info.
- * `data` is expected to hold: { industry, experience?, bio?, skills? }
+ * `data` is expected to hold: { industry, currentRole?, targetRole?, careerGoals?, experience?, bio?, skills? }
  */
 export async function updateUser(data) {
   if (!data?.industry) throw new Error("Industry is required");
@@ -31,7 +31,7 @@ export async function updateUser(data) {
 
     if (!existingInsight) {
       try {
-        precomputedInsights = await generateAIInsights(data.industry);
+        precomputedInsights = await generateAIInsights(data.industry, data);
       } catch (e) {
         // generateAIInsights already handles fallbacks, but guard here
         console.error("Failed to generate insights pre-transaction:", e);
@@ -49,7 +49,7 @@ export async function updateUser(data) {
         });
 
         if (!industryInsight) {
-          const insights = precomputedInsights ?? (await generateAIInsights(data.industry));
+          const insights = precomputedInsights ?? (await generateAIInsights(data.industry, data));
 
           industryInsight = await tx.industryInsight.create({
             data: {
@@ -67,6 +67,9 @@ export async function updateUser(data) {
           where: { id: user.id },
           data: {
             industry: data.industry,
+            currentRole: data.currentRole ?? null,
+            targetRole: data.targetRole ?? null,
+            careerGoals: data.careerGoals ?? null,
             experience: data.experience,
             bio: data.bio,
             skills: data.skills,
@@ -78,7 +81,8 @@ export async function updateUser(data) {
       { timeout: 10_000 }
     );
 
-    revalidatePath("/"); // Re-render pages that depend on user data
+    revalidatePath("/");
+    revalidatePath("/settings");
     return result.updatedUser;
   } catch (err) {
     console.error("Error updating user and industry:", err);

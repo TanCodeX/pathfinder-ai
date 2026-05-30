@@ -5,6 +5,7 @@ import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { generateGeminiContent } from "@/lib/gemini";
 import { buildSecurePrompt, generateWithStructuredOutput } from "@/lib/prompt-safety";
+import { buildUserProfileContext } from "@/lib/ai-context";
 import { validateInput, validateOutput } from "@/lib/validate";
 import { resumeSaveSchema, resumeImprovementSchema } from "@/lib/schemas/forms";
 import { resumeImprovementOutputSchema, SCHEMA_DESCRIPTIONS } from "@/lib/schemas/outputs";
@@ -75,6 +76,7 @@ export async function improveWithAI(rawParams) {
   if (!user) return { success: false, errors: { _form: ["User account match could not be checked."] } };
 
   const prompt = buildSecurePrompt({
+    context: buildUserProfileContext(user),
     task: `As an expert resume writer, improve the following description to make it more impactful, quantifiable, and aligned with industry standards.
 
 Requirements:

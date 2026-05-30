@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { generateGeminiContentStream } from "@/lib/gemini";
 import { db } from "@/lib/prisma";
 import { buildSecurePrompt } from "@/lib/prompt-safety";
+import { buildUserAiContext } from "@/lib/ai-context";
 import {
   getRateLimitIdentifier,
   enforceRateLimit,
@@ -16,6 +17,7 @@ import {
   cacheResponse,
 } from "@/lib/cache/cache-service";
 import { respondError, respondSseError, ERROR_CODES } from "@/lib/api/error-handler";
+
 const SSE_HEADERS = {
   "Content-Type": "text/event-stream; charset=utf-8",
   "Cache-Control": "no-cache, no-store, must-revalidate, no-transform",
@@ -25,7 +27,6 @@ const SSE_HEADERS = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
-
 
 const encodeSseEvent = (encoder, event, payload) => {
   const safePayload = payload ?? {};
@@ -123,44 +124,6 @@ export async function POST(request) {
   if (!user) {
     return respondError(ERROR_CODES.USER_NOT_FOUND);
   }
-  const cacheUser = userId || request.headers.get("x-forwarded-for") || "anonymous";
-
-  const existingCachedResponse = await getCachedResponse(
-    cacheUser,
-    promptCheck.prompt
-  );
-
-  if (existingCachedResponse) {
-  const encoder = new TextEncoder();
-
-  const cachedStream = new ReadableStream({
-    start(controller) {
-      controller.enqueue(
-        encodeSseEvent(encoder, "delta", {
-          text: existingCachedResponse,
-          cached: true,
-        })
-      );
-
-      controller.enqueue(
-        encodeSseEvent(encoder, "done", {
-          finalText: existingCachedResponse,
-          hasContent: true,
-          cached: true,
-        })
-      );
-
-      controller.close();
-    },
-  });
-
-  return new Response(cachedStream, {
-    headers: {
-      ...SSE_HEADERS,
-      "X-Cache": "HIT",
-    },
-  });
-}
 
   if (conversationId) {
     try {
@@ -199,28 +162,28 @@ export async function POST(request) {
     }
   }
 
-  const encoder = new TextEncoder();
-  const abortController = new AbortController();
+  const recentMessages = conversationId
+    ? await db.message.findMany({
+        where: {
+          conversationId,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+        take: 6,
+        select: {
+          role: true,
+          content: true,
+        },
+      })
+    : [];
 
-  const stream = new ReadableStream({
-    async start(controller) {
-      let fullResponse = "";
-      let streamClosed = false;
+  const aiContext = buildUserAiContext(user, recentMessages.reverse());
+  const cacheUser = userId || request.headers.get("x-forwarded-for") || "anonymous";
 
-      const safeEnqueue = (event, payload) => {
-        if (streamClosed || abortController.signal.aborted) return;
-        controller.enqueue(encodeSseEvent(encoder, event, payload));
-      };
-
-      const safeClose = () => {
-        if (streamClosed) return;
-        streamClosed = true;
-        controller.close();
-      };
-
-      try {
-        const restrictedPrompt = buildSecurePrompt({
-          task: `You are Pathfinder AI, a professional career guidance assistant.
+  const restrictedPrompt = buildSecurePrompt({
+    context: aiContext.context,
+    task: `You are Pathfinder AI, a professional career guidance assistant.
 
 Your scope includes ALL professional and career-related domains, including:
 - software engineering, medicine, healthcare, law, finance, accounting, banking
@@ -242,17 +205,105 @@ Rules:
 - If the user asks something completely unrelated (jokes, entertainment, random trivia, casual unrelated chat), politely redirect them toward career/professional topics.
 - Be practical, structured, and professional.
 - Give actionable advice.`,
-          untrustedData: [
-            { label: "userQuery", value: promptCheck.prompt, maxLength: 4000 },
-          ],
-        });
+    untrustedData: [
+      { label: "userQuery", value: promptCheck.prompt, maxLength: 4000 },
+    ],
+  });
 
+  const existingCachedResponse = await getCachedResponse(
+    cacheUser,
+    restrictedPrompt
+  );
+
+  if (existingCachedResponse) {
+    if (conversationId && (user?.saveChatHistory ?? true)) {
+      try {
+        await db.$transaction(
+          async (tx) => {
+            await tx.message.create({
+              data: {
+                conversationId,
+                role: "assistant",
+                content: existingCachedResponse,
+              },
+            });
+
+            await tx.conversation.update({
+              where: {
+                id: conversationId,
+              },
+              data: {
+                updatedAt: new Date(),
+              },
+            });
+          },
+          { timeout: 10_000 }
+        );
+      } catch (error) {
+        console.error("Cached response persistence failed:", error);
+      }
+    }
+
+    const encoder = new TextEncoder();
+
+    const cachedStream = new ReadableStream({
+      start(controller) {
+        controller.enqueue(
+          encodeSseEvent(encoder, "delta", {
+            text: existingCachedResponse,
+            cached: true,
+          })
+        );
+
+        controller.enqueue(
+          encodeSseEvent(encoder, "done", {
+            finalText: existingCachedResponse,
+            hasContent: true,
+            cached: true,
+            debug: {
+              ...aiContext.debug,
+              promptContext: aiContext.context,
+            },
+          })
+        );
+
+        controller.close();
+      },
+    });
+
+    return new Response(cachedStream, {
+      headers: {
+        ...SSE_HEADERS,
+        "X-Cache": "HIT",
+      },
+    });
+  }
+
+  const encoder = new TextEncoder();
+  const abortController = new AbortController();
+
+  const stream = new ReadableStream({
+    async start(controller) {
+      let fullResponse = "";
+      let streamClosed = false;
+
+      const safeEnqueue = (event, payload) => {
+        if (streamClosed || abortController.signal.aborted) return;
+        controller.enqueue(encodeSseEvent(encoder, event, payload));
+      };
+
+      const safeClose = () => {
+        if (streamClosed) return;
+        streamClosed = true;
+        controller.close();
+      };
+
+      try {
         const result = await generateGeminiContentStream(restrictedPrompt, {
           signal: abortController.signal,
         });
 
         for await (const chunk of result.stream) {
-
           if (abortController.signal.aborted) break;
 
           const text = extractChunkText(chunk);
@@ -308,6 +359,10 @@ Rules:
         safeEnqueue("done", {
           finalText: fullResponse,
           hasContent: Boolean(fullResponse.trim()),
+          debug: {
+            ...aiContext.debug,
+            promptContext: aiContext.context,
+          },
         });
         safeClose();
       } catch (error) {
@@ -323,7 +378,7 @@ Rules:
         safeClose();
       }
     },
-  cancel(reason) {
+    cancel(reason) {
       console.warn("SSE stream cancelled by client connection abort:", reason);
       abortController.abort();
     },

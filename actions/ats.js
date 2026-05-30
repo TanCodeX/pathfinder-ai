@@ -5,6 +5,7 @@ import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { generateGeminiContent } from "@/lib/gemini";
 import { buildSecurePrompt } from "@/lib/prompt-safety";
+import { buildUserProfileContext } from "@/lib/ai-context";
 import { validateInput, parseAIJson } from "@/lib/validate";
 import { atsAnalysisSchema } from "@/lib/schemas/forms";
 import { normalizeAtsSuggestions } from "@/lib/ats";
@@ -34,6 +35,7 @@ export async function analyzeATS(rawParams) {
     }
 
     const prompt = buildSecurePrompt({
+      context: buildUserProfileContext(user),
       task: "You are an expert ATS (Applicant Tracking System) analyst and career coach. Analyze the resume against the job description and return a detailed ATS compatibility report.",
       untrustedData: [
         { label: "resumeContent", value: resumeContent, maxLength: 8000 },

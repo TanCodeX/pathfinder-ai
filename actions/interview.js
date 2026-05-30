@@ -4,6 +4,7 @@ import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { generateGeminiContent } from "@/lib/gemini";
 import { buildSecurePrompt } from "@/lib/prompt-safety";
+import { buildUserProfileContext } from "@/lib/ai-context";
 import { parseAIJson } from "@/lib/validate";
 
 // Fallback MCQ questions in case Gemini generation fails
@@ -129,9 +130,20 @@ export async function generateQuiz(category = "Technical") {
 
   const user = await db.user.findUnique({
     where: { clerkUserId: userId },
-    select: { industry: true, skills: true },
+    select: {
+      name: true,
+      industry: true,
+      currentRole: true,
+      targetRole: true,
+      careerGoals: true,
+      experience: true,
+      bio: true,
+      skills: true,
+    },
   });
   if (!user) throw new Error("User not found");
+
+  const profileContext = buildUserProfileContext(user);
 
   const normalizedSkills = user.skills
     ? Array.from(new Set(user.skills.map((s) => String(s).trim()).filter(Boolean)))
@@ -146,6 +158,7 @@ export async function generateQuiz(category = "Technical") {
   const categoryIntro = categoryPrompts[category] || categoryPrompts.Technical;
 
   const prompt = buildSecurePrompt({
+    context: profileContext,
     task: `You are a highly experienced hiring manager and strict quiz generator.
 
 ${categoryIntro}
@@ -254,6 +267,7 @@ export async function saveQuizResult(questions, answers, score, category = "Tech
       .join("\n\n");
 
     const tipPrompt = buildSecurePrompt({
+      context: profileContext,
       task: "You are a supportive career mentor. The candidate completed a quiz. Provide an encouraging, actionable improvement tip (strictly max 2 sentences) recommending key learning areas. Be positive, warm, and professional. Do not refer to question indexes or speak critically.",
       untrustedData: [
         { label: "industry", value: user.industry || "software", maxLength: 200 },

@@ -4,6 +4,7 @@ import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { generateGeminiContent } from "@/lib/gemini";
 import { buildSecurePrompt, generateWithStructuredOutput } from "@/lib/prompt-safety";
+import { buildUserProfileContext } from "@/lib/ai-context";
 import { validateOutput } from "@/lib/validate";
 import { coverLetterOutputSchema, SCHEMA_DESCRIPTIONS } from "@/lib/schemas/outputs";
 
@@ -25,6 +26,7 @@ export async function generateCoverLetter(data) {
   }
 
   const prompt = buildSecurePrompt({
+    context: buildUserProfileContext(user),
     task: `Write a professional cover letter for the position described below.
 
 Use only the candidate facts provided in the input. Do not invent projects, achievements,
