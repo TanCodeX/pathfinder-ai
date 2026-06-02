@@ -316,6 +316,18 @@ Open [http://localhost:3000](http://localhost:3000). You're in.
 
 ---
 
+### 5.5 Start the Inngest Dev Server (required for background jobs)
+
+In a **second terminal**, run:
+
+```bash
+npx inngest-cli@latest dev
+```
+
+> ⚠️ Without this, `generateIndustryInsights` and all background functions
+> will silently never fire — no error, no warning. This is a required step.
+> Get your production keys from [app.inngest.com](https://app.inngest.com).
+
 ## 🔑 Environment Variables
 
 Create `.env.local` in the root and populate with:
@@ -341,6 +353,13 @@ NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/onboarding
 # AI ENGINE
 # ─────────────────────────────────────────────
 GEMINI_API_KEY=AIza...
+
+# Inngest (Background Job Processing)
+# Without these, background jobs like generateIndustryInsights silently never fire.
+# For local dev set both to: local
+# For production get them from: https://app.inngest.com → your app → Manage
+INNGEST_EVENT_KEY=your_inngest_event_key
+INNGEST_SIGNING_KEY=your_inngest_signing_key
 
 # ─────────────────────────────────────────────
 # APP (OPTIONAL)

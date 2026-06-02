@@ -6,6 +6,8 @@
   },
   "scripts": {
     "dev": "next dev",
+    "dev:inngest": "npx inngest-cli@latest dev",
+    "dev:all": "concurrently \"next dev\" \"npx inngest-cli@latest dev\"",
     "build": "next build",
     "start": "next start",
     "test": "vitest run",
