@@ -25,7 +25,7 @@ export default function LandingBackground() {
   if (!mounted) return null;
 
   return (
-    <div ref={ref} className="fixed inset-0 z-[-1] overflow-hidden bg-[#030712] pointer-events-none">
+    <div ref={ref} className="fixed inset-0 z-[-1] overflow-hidden bg-background pointer-events-none">
       <motion.div
         style={{ rotate: rotateLeft, opacity, y: smoothY }}
         className="absolute top-[-15%] left-[-10%] h-[42rem] w-[42rem] rounded-full bg-cyan-500/10 blur-[140px]"

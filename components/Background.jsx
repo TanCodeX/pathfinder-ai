@@ -44,7 +44,7 @@ export default function InteractiveBackground() {
   return (
     <div
       ref={containerRef}
-      className="fixed inset-0 z-[-1] overflow-hidden bg-[#030712] pointer-events-none"
+      className="fixed inset-0 z-[-1] overflow-hidden bg-background pointer-events-none"
     >
       {/* ===== Main Career Glow ===== */}
       <motion.div
