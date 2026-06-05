@@ -45,15 +45,7 @@ export async function getUserSettings(userId) {
       where: { userId: user.id },
     });
 
-    if (existingSettings) {
-      return normalizeSettings(existingSettings);
-    }
-
-    const settings = await db.userSettings.create({
-      data: { userId: user.id },
-    });
-
-    return normalizeSettings(settings);
+    return normalizeSettings(existingSettings);
   } catch (error) {
     console.error("[Settings Action] Error in getUserSettings:", error.message);
     // Return default settings if DB call fails (e.g. table missing)
