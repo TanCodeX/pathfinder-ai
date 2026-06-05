@@ -15,6 +15,7 @@ import { SkillGapSection } from "@/components/sections/SkillGapSection";
 import { TestimonialsSection } from "@/components/sections/TestimonialsSection";
 import { PricingSection } from "@/components/sections/PricingSection";
 import { CTASection } from "@/components/sections/CTASection";
+import { OpenSourceCommunity } from "@/components/sections/OpenSourceCommunity";
 import { FadeUp, StaggerContainer, StaggerItem, RevealText } from "@/components/motion";
 import { MagneticButton } from "@/components/motion/magnetic-button";
 import { TiltCard } from "@/components/motion/tilt-card";
@@ -388,6 +389,8 @@ export default function LandingPage() {
 
       {/* ───────────── CTA ───────────── */}
       <CTASection />
+
+      <OpenSourceCommunity />
 
       <ScrollToTop />
     </div>
