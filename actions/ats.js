@@ -171,22 +171,21 @@ export async function deleteATSAnalysis(id) {
       return { success: false, errors: { _form: ["User profile not found."] } };
     }
 
-    // Ensure the record exists and belongs to the requesting user before deleting.
-    const existing = await db.atsAnalysis.findUnique({ where: { id: id.trim() } });
-    if (!existing) {
-      return { success: false, errors: { _form: ["Analysis record not found."] } };
-    }
-
-    if (existing.userId !== user.id) {
-      return { success: false, errors: { _form: ["Unauthorized: you do not own this analysis."] } };
-    }
-
-    await db.atsAnalysis.deleteMany({
+    const { count } = await db.atsAnalysis.deleteMany({
       where: {
-        id: existing.id,
+        id: id.trim(),
         userId: user.id,
-      },
-    });
+        },
+      });
+
+    if (count === 0) {
+      return {
+        success: false,
+        errors: {
+          _form: ["Analysis record not found."],
+        },
+      };
+    }
 
     revalidatePath("/ats-analyzer");
     return { success: true };
