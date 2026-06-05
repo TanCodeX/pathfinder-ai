@@ -14,6 +14,7 @@ import {
   Copy,
   ScanSearch,
   Briefcase,
+  Map,
   Settings,
   Menu,
   X,
@@ -40,6 +41,7 @@ const MENU_GROUPS = [
       { href: "/resume", label: "Resumes", icon: <FileText className="h-4 w-4" /> },
       { href: "/ai-cover-letter", label: "Cover Letters", icon: <Mail className="h-4 w-4" /> },
       { href: "/interview", label: "Mock Interviews", icon: <Mic className="h-4 w-4" /> },
+      { href: "/roadmap", label: "Career Roadmap", icon: <Map className="h-4 w-4" /> },
       { href: "/dashboard?tab=templates", label: "Templates", icon: <Copy className="h-4 w-4" /> },
     ]
   },

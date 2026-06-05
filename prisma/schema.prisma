@@ -32,6 +32,7 @@ model User {
   resume          Resume?
   industryInsight IndustryInsight? @relation(fields: [industry], references: [industry])
   atsAnalyses     ATSAnalysis[]
+  roadmaps        Roadmap[]
   settings        UserSettings?
 
   exportRecords ExportRecord[]
@@ -215,4 +216,13 @@ model AiRateLimit {
 
   @@unique([userId, action, windowStart])
   @@index([userId, action])
+}
+
+model Roadmap {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content   Json     // The full roadmap milestones JSON
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
