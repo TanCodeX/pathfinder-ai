@@ -12,6 +12,7 @@ import {
 } from "@/lib/rate-limit";
 import {
   preparePromptForGeneration,
+  buildSseErrorResponse,
 } from "@/lib/prompt-guard";
 import {
   buildCorsDeniedResponse,
