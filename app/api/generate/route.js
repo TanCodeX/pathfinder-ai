@@ -328,8 +328,6 @@ export async function POST(request) {
   });
 
   const aiContext = buildUserAiContext(user, recentMessages.reverse());
-  const clientIp = request.headers.get("x-real-ip") || "anonymous";
-  const cacheUser = userId || clientIp;
 
   const restrictedPrompt = buildSecurePrompt({
     context: aiContext.context,
