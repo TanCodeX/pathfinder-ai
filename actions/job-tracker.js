@@ -58,6 +58,7 @@ export async function createJobApplication(data) {
     });
 
     revalidatePath("/job-tracker");
+    revalidatePath("/dashboard");
     return { success: true, data: job };
   } catch (error) {
     console.error("Failed to create job application:", error);
@@ -93,10 +94,45 @@ export async function updateJobApplicationStatus(id, status) {
     }
 
     revalidatePath("/job-tracker");
+    revalidatePath("/dashboard");
     return { success: true };
   } catch (error) {
     console.error("Failed to update job status:", error);
     return { success: false, errors: { _form: ["Failed to update job status"] } };
+  }
+}
+
+export async function updateJobApplicationInterviewDate(id, interviewDate) {
+  const { userId } = await auth();
+  if (!userId) return { success: false, errors: { _form: ["Unauthorized"] } };
+
+  const user = await db.user.findUnique({
+    where: { clerkUserId: userId },
+  });
+  if (!user) return { success: false, errors: { _form: ["User not found"] } };
+
+  try {
+    const parsedDate = interviewDate ? new Date(interviewDate) : null;
+    const job = await db.jobApplication.updateMany({
+      where: {
+        id,
+        userId: user.id,
+      },
+      data: {
+        interviewDate: parsedDate,
+      },
+    });
+
+    if (job.count === 0) {
+      return { success: false, errors: { _form: ["Job application not found"] } };
+    }
+
+    revalidatePath("/job-tracker");
+    revalidatePath("/dashboard");
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to update interview date:", error);
+    return { success: false, errors: { _form: ["Failed to update interview date"] } };
   }
 }
 
@@ -122,6 +158,7 @@ export async function deleteJobApplication(id) {
     }
 
     revalidatePath("/job-tracker");
+    revalidatePath("/dashboard");
     return { success: true };
   } catch (error) {
     console.error("Failed to delete job application:", error);

@@ -98,6 +98,7 @@ model CoverLetter {
   status         String   @default("draft")
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+  jobApplications JobApplication[]
 
   @@index([userId])
 }
@@ -166,6 +167,7 @@ model ATSAnalysis {
   suggestions     Json[]
   overallFeedback String?  @db.Text
   createdAt       DateTime @default(now())
+  jobApplications JobApplication[]
 
   @@index([userId])
 }
@@ -270,6 +272,11 @@ model JobApplication {
   salary         String?
   location       String?
   notes          String?      @db.Text
+  atsAnalysisId  String?
+  atsAnalysis    ATSAnalysis? @relation(fields: [atsAnalysisId], references: [id], onDelete: SetNull)
+  coverLetterId  String?
+  coverLetter    CoverLetter? @relation(fields: [coverLetterId], references: [id], onDelete: SetNull)
+  interviewDate  DateTime?
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
