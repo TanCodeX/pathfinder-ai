@@ -11,8 +11,8 @@ const COLUMNS = [
   { id: "Wishlist", label: "Wishlist", color: "bg-blue-500/10 text-blue-500 border-blue-500/20" },
   { id: "Applied", label: "Applied", color: "bg-purple-500/10 text-purple-500 border-purple-500/20" },
   { id: "Interviewing", label: "Interviewing", color: "bg-orange-500/10 text-orange-500 border-orange-500/20" },
-  { id: "Offer", label: "Offer", color: "bg-green-500/10 text-green-500 border-green-500/20" },
-  { id: "Rejected", label: "Rejected", color: "bg-red-500/10 text-red-500 border-red-500/20" },
+  { id: "Offer Received", label: "Offer Received", color: "bg-green-500/10 text-green-500 border-green-500/20" },
+  { id: "Archived", label: "Archived", color: "bg-zinc-500/10 text-zinc-500 border-zinc-500/20" },
 ];
 
 export default function KanbanBoard({ initialJobs, setJobs }) {

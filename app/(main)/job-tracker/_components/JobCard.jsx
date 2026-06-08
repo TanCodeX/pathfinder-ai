@@ -2,13 +2,18 @@
 
 import { useState } from "react";
 import { formatDistanceToNow } from "date-fns";
-import { Trash2, ExternalLink, FileText, ScanSearch, MapPin, DollarSign, GripVertical } from "lucide-react";
-import { deleteJobApplication } from "@/actions/job-tracker";
+import { Trash2, ExternalLink, FileText, ScanSearch, MapPin, DollarSign, Calendar, Clock } from "lucide-react";
+import { deleteJobApplication, updateJobApplicationInterviewDate } from "@/actions/job-tracker";
 import { toast } from "sonner";
 import Link from "next/link";
 
 export default function JobCard({ job, onDelete }) {
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [interviewDate, setInterviewDate] = useState(
+    job.interviewDate ? new Date(job.interviewDate).toISOString().slice(0, 16) : ""
+  );
+  const [isUpdatingDate, setIsUpdatingDate] = useState(false);
 
   const handleDelete = async (e) => {
     e.stopPropagation();
@@ -23,6 +28,34 @@ export default function JobCard({ job, onDelete }) {
         setIsDeleting(false);
       }
     }
+  };
+
+  const handleUpdateDate = async (e) => {
+    e.preventDefault();
+    setIsUpdatingDate(true);
+    const res = await updateJobApplicationInterviewDate(job.id, interviewDate);
+    if (res.success) {
+      toast.success("Interview date updated");
+      job.interviewDate = interviewDate ? new Date(interviewDate) : null;
+      setShowDatePicker(false);
+    } else {
+      toast.error("Failed to update interview date");
+    }
+    setIsUpdatingDate(false);
+  };
+
+  const handleCalendarLink = () => {
+    if (!job.interviewDate) return "";
+    const title = `Interview: ${job.jobTitle} at ${job.companyName}`;
+    const details = `Interview for the ${job.jobTitle} position at ${job.companyName}.\nNotes: ${job.notes || ""}`;
+    const start = new Date(job.interviewDate);
+    const end = new Date(start.getTime() + 60 * 60 * 1000); // 1 hour duration
+    
+    const formatDate = (date) => {
+      return date.toISOString().replace(/-|:|\.\d\d\d/g, "");
+    };
+    
+    return `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${formatDate(start)}/${formatDate(end)}&details=${encodeURIComponent(details)}`;
   };
 
   return (
@@ -62,6 +95,88 @@ export default function JobCard({ job, onDelete }) {
         )}
       </div>
 
+      {job.notes && (
+        <p className="text-xs text-muted-foreground line-clamp-2 bg-muted/30 p-2 rounded-xl border border-border/50 mb-4 font-medium">
+          {job.notes}
+        </p>
+      )}
+
+      {job.status === "Interviewing" && (
+        <>
+          {job.interviewDate ? (
+            <div className="mt-3 p-2.5 bg-amber-500/5 rounded-xl border border-amber-500/20 text-xs flex flex-col gap-1.5">
+              <div className="flex items-center justify-between text-amber-500 font-bold">
+                <span className="flex items-center gap-1">
+                  <Calendar className="h-3.5 w-3.5" />
+                  Interview Scheduled
+                </span>
+                <button 
+                  onClick={() => setShowDatePicker(!showDatePicker)}
+                  className="text-[10px] hover:underline"
+                >
+                  Reschedule
+                </button>
+              </div>
+              <div className="text-muted-foreground font-medium flex items-center gap-1">
+                <Clock className="h-3 w-3" />
+                {new Date(job.interviewDate).toLocaleString([], {
+                  dateStyle: "medium",
+                  timeStyle: "short",
+                })}
+              </div>
+              <a
+                href={handleCalendarLink()}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full text-center py-1.5 px-3 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors font-bold text-[11px] mt-1 flex items-center justify-center gap-1 shadow-sm"
+              >
+                Add to Google Calendar
+              </a>
+            </div>
+          ) : (
+            <div className="mt-3">
+              <button
+                onClick={() => setShowDatePicker(!showDatePicker)}
+                className="w-full py-1.5 px-3 bg-primary/10 text-primary border border-primary/20 rounded-xl hover:bg-primary/20 transition-all font-bold text-xs flex items-center justify-center gap-1"
+              >
+                <Calendar className="h-3.5 w-3.5" />
+                Schedule Interview
+              </button>
+            </div>
+          )}
+        </>
+      )}
+
+      {showDatePicker && (
+        <form onSubmit={handleUpdateDate} className="mt-3 p-3 bg-muted/50 rounded-xl border border-border flex flex-col gap-2">
+          <label className="text-[10px] font-bold text-muted-foreground uppercase">
+            Interview Date & Time
+          </label>
+          <input
+            type="datetime-local"
+            value={interviewDate}
+            onChange={(e) => setInterviewDate(e.target.value)}
+            className="bg-background border border-border rounded-lg p-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary w-full"
+          />
+          <div className="flex gap-2 justify-end">
+            <button
+              type="button"
+              onClick={() => setShowDatePicker(false)}
+              className="px-2.5 py-1 text-[11px] font-medium text-muted-foreground hover:bg-muted rounded-md"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isUpdatingDate}
+              className="px-2.5 py-1 text-[11px] font-bold bg-primary text-white hover:bg-primary/90 rounded-md disabled:opacity-50"
+            >
+              Save
+            </button>
+          </div>
+        </form>
+      )}
+
       <div className="flex items-center justify-between mt-4 pt-4 border-t border-border/50">
         <div className="flex items-center gap-2">
           {job.url && (
@@ -75,15 +190,34 @@ export default function JobCard({ job, onDelete }) {
               <ExternalLink className="h-3.5 w-3.5" />
             </a>
           )}
+          
+          <Link 
+            href="/resume"
+            className="p-1.5 bg-muted text-muted-foreground rounded-lg hover:bg-primary/10 hover:text-primary transition-colors flex items-center gap-1"
+            title="View Resume"
+          >
+            <FileText className="h-3.5 w-3.5 text-blue-500" />
+          </Link>
+
+          {job.coverLetterId && (
+            <Link 
+              href={`/ai-cover-letter?id=${job.coverLetterId}`}
+              className="p-1.5 bg-muted text-muted-foreground rounded-lg hover:bg-primary/10 hover:text-primary transition-colors flex items-center gap-1"
+              title="View Cover Letter"
+            >
+              <FileText className="h-3.5 w-3.5 text-purple-500" />
+            </Link>
+          )}
+
           {job.atsAnalysisId && (
             <Link 
               href={`/ats-analyzer?id=${job.atsAnalysisId}`}
               className="p-1.5 bg-muted text-muted-foreground rounded-lg hover:bg-primary/10 hover:text-primary transition-colors flex items-center gap-1"
               title="View ATS Analysis"
             >
-              <ScanSearch className="h-3.5 w-3.5" />
+              <ScanSearch className="h-3.5 w-3.5 text-green-500" />
               {job.atsAnalysis?.atsScore && (
-                <span className="text-[10px] font-bold">{job.atsAnalysis.atsScore}</span>
+                <span className="text-[10px] font-bold text-green-500">{job.atsAnalysis.atsScore}</span>
               )}
             </Link>
           )}

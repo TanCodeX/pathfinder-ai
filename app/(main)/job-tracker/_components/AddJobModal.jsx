@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Building2, Briefcase, MapPin, DollarSign, Link as LinkIcon, FileText } from "lucide-react";
+import { X, Building2, Briefcase, MapPin, DollarSign, Link as LinkIcon, Calendar } from "lucide-react";
 import { createJobApplication } from "@/actions/job-tracker";
 import { getATSAnalyses } from "@/actions/ats";
+import { getCoverLetters } from "@/actions/cover-letter";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,7 @@ import { Button } from "@/components/ui/button";
 export default function AddJobModal({ isOpen, onClose, onAdd }) {
   const [loading, setLoading] = useState(false);
   const [atsAnalyses, setAtsAnalyses] = useState([]);
+  const [coverLetters, setCoverLetters] = useState([]);
   
   const [formData, setFormData] = useState({
     companyName: "",
@@ -21,18 +23,30 @@ export default function AddJobModal({ isOpen, onClose, onAdd }) {
     salary: "",
     url: "",
     atsAnalysisId: "",
+    coverLetterId: "",
+    interviewDate: "",
   });
 
   useEffect(() => {
     if (isOpen) {
-      loadATS();
+      loadData();
     }
   }, [isOpen]);
 
-  async function loadATS() {
-    const res = await getATSAnalyses();
-    if (res.success) {
-      setAtsAnalyses(res.data);
+  async function loadData() {
+    try {
+      const [atsRes, clRes] = await Promise.all([
+        getATSAnalyses(),
+        getCoverLetters(),
+      ]);
+      if (atsRes.success) {
+        setAtsAnalyses(atsRes.data);
+      }
+      if (clRes) {
+        setCoverLetters(clRes);
+      }
+    } catch (err) {
+      console.error("Failed to load modal details:", err);
     }
   }
 
@@ -41,7 +55,11 @@ export default function AddJobModal({ isOpen, onClose, onAdd }) {
     setLoading(true);
 
     try {
-      const res = await createJobApplication(formData);
+      const payload = { ...formData };
+      if (payload.status !== "Interviewing") {
+        delete payload.interviewDate;
+      }
+      const res = await createJobApplication(payload);
       if (res.success) {
         toast.success("Application added successfully!");
         onAdd(res.data);
@@ -53,6 +71,8 @@ export default function AddJobModal({ isOpen, onClose, onAdd }) {
           salary: "",
           url: "",
           atsAnalysisId: "",
+          coverLetterId: "",
+          interviewDate: "",
         });
         onClose();
       } else {
@@ -82,7 +102,7 @@ export default function AddJobModal({ isOpen, onClose, onAdd }) {
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="relative w-full max-w-md bg-card border border-border shadow-2xl rounded-3xl overflow-hidden z-10"
+          className="relative w-full max-w-md bg-card border border-border shadow-2xl rounded-3xl overflow-hidden z-10 max-h-[90vh] flex flex-col"
         >
           <div className="flex items-center justify-between p-6 border-b border-border/50 bg-muted/30">
             <h2 className="text-xl font-bold text-foreground">Add Application</h2>
@@ -94,7 +114,7 @@ export default function AddJobModal({ isOpen, onClose, onAdd }) {
             </button>
           </div>
 
-          <form onSubmit={handleSubmit} className="p-6 space-y-5">
+          <form onSubmit={handleSubmit} className="p-6 space-y-5 overflow-y-auto flex-1">
             <div className="space-y-4">
               <div className="relative">
                 <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -155,7 +175,7 @@ export default function AddJobModal({ isOpen, onClose, onAdd }) {
                   Status
                 </label>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                  {["Wishlist", "Applied", "Interviewing", "Offer", "Rejected"].map(s => (
+                  {["Wishlist", "Applied", "Interviewing", "Offer Received", "Archived"].map(s => (
                     <button
                       key={s}
                       type="button"
@@ -171,6 +191,43 @@ export default function AddJobModal({ isOpen, onClose, onAdd }) {
                   ))}
                 </div>
               </div>
+
+              {formData.status === "Interviewing" && (
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider ml-1">
+                    Interview Date & Time
+                  </label>
+                  <div className="relative">
+                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      type="datetime-local"
+                      className="pl-10 h-12 rounded-xl bg-background border-border focus-visible:ring-primary"
+                      value={formData.interviewDate}
+                      onChange={e => setFormData(p => ({ ...p, interviewDate: e.target.value }))}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {coverLetters.length > 0 && (
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider ml-1">
+                    Link Cover Letter (Optional)
+                  </label>
+                  <select
+                    className="w-full h-12 px-3 rounded-xl bg-background border border-border text-sm focus:ring-2 focus:ring-primary outline-none"
+                    value={formData.coverLetterId}
+                    onChange={e => setFormData(p => ({ ...p, coverLetterId: e.target.value }))}
+                  >
+                    <option value="">-- None --</option>
+                    {coverLetters.map(c => (
+                      <option key={c.id} value={c.id}>
+                        {c.jobTitle} @ {c.companyName}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               {atsAnalyses.length > 0 && (
                 <div className="space-y-2">
