@@ -3,10 +3,19 @@
 import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { generateGeminiContent } from "@/lib/gemini";
+import { checkRateLimit, formatResetTime } from "@/lib/rate-limit-actions";
 
 export async function chatSalaryNegotiation(history, userMessage) {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
+
+  const limit = await checkRateLimit(userId, "negotiation");
+  if (!limit.allowed) {
+    return {
+      success: false,
+      error: `Salary negotiation limit reached. Resets in ${formatResetTime(limit.resetAt)}.`,
+    };
+  }
 
   // Format history for Gemini
   const formattedHistory = history.map(msg => `${msg.role === 'user' ? 'Candidate' : 'HR'}: ${msg.content}`).join("\n");
@@ -32,6 +41,14 @@ HR:`;
 export async function evaluateNegotiation(history) {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
+
+  const limit = await checkRateLimit(userId, "negotiation");
+  if (!limit.allowed) {
+    return {
+      success: false,
+      error: `Salary negotiation limit reached. Resets in ${formatResetTime(limit.resetAt)}.`,
+    };
+  }
 
   const formattedHistory = history.map(msg => `${msg.role === 'user' ? 'Candidate' : 'HR'}: ${msg.content}`).join("\n");
   

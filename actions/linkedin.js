@@ -8,10 +8,21 @@ import { linkedInOptimizationSchema } from "@/lib/schemas/forms";
 import { buildSecurePrompt, parseAIJson } from "@/lib/prompt-safety";
 import { generateGeminiContent } from "@/lib/gemini";
 import { buildUserProfileContext } from "@/lib/ai-context";
+import { checkRateLimit, formatResetTime } from "@/lib/rate-limit-actions";
 
 export async function optimizeLinkedInProfile(data) {
   const { userId } = await auth();
   if (!userId) return { success: false, errors: { _form: ["Unauthorized"] } };
+
+  const limit = await checkRateLimit(userId, "linkedin");
+  if (!limit.allowed) {
+    return {
+      success: false,
+      errors: {
+        _form: [`LinkedIn optimization limit reached. Resets in ${formatResetTime(limit.resetAt)}.`],
+      },
+    };
+  }
 
   const validation = validateInput(linkedInOptimizationSchema, data);
   if (!validation.success) return { success: false, errors: validation.errors };

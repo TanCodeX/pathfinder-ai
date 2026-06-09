@@ -8,10 +8,21 @@ import { projectIdeaSchema } from "@/lib/schemas/forms";
 import { buildSecurePrompt, parseAIJson } from "@/lib/prompt-safety";
 import { generateGeminiContent } from "@/lib/gemini";
 import { buildUserProfileContext } from "@/lib/ai-context";
+import { checkRateLimit, formatResetTime } from "@/lib/rate-limit-actions";
 
 export async function generateProjectIdeas(data) {
   const { userId } = await auth();
   if (!userId) return { success: false, errors: { _form: ["Unauthorized"] } };
+
+  const limit = await checkRateLimit(userId, "portfolio");
+  if (!limit.allowed) {
+    return {
+      success: false,
+      errors: {
+        _form: [`Project idea generation limit reached. Resets in ${formatResetTime(limit.resetAt)}.`],
+      },
+    };
+  }
 
   const validation = validateInput(projectIdeaSchema, data);
   if (!validation.success) return { success: false, errors: validation.errors };
