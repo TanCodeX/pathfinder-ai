@@ -100,7 +100,7 @@ export default function LandingPage() {
                   transition={{ delay: 0.45, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                   className="flex flex-col sm:flex-row items-start gap-4"
                 >
-                  <MagneticButton>
+                  <MagneticButton asChild>
                     <Button
                       size="lg"
                       onClick={handleDashboard}

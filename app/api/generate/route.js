@@ -12,6 +12,7 @@ import {
 } from "@/lib/rate-limit";
 import {
   preparePromptForGeneration,
+  buildSseErrorResponse,
 } from "@/lib/prompt-guard";
 import {
   buildCorsDeniedResponse,
@@ -28,6 +29,7 @@ import {
 import { respondError, respondSseError, ERROR_CODES } from "@/lib/api/error-handler";
 import { validateInput, validateId } from "@/lib/validate";
 import { chatPromptSchema } from "@/lib/schemas/forms";
+import { getEnv } from "@/lib/env";
 
 const SSE_BASE_HEADERS = {
   "Content-Type": "text/event-stream; charset=utf-8",
@@ -59,6 +61,47 @@ const encodeSseEvent = (encoder, event, payload) => {
   return encoder.encode(`event: ${event}\ndata: ${JSON.stringify(safePayload)}\n\n`);
 };
 
+function createCachedSseResponse({
+  text,
+  headers,
+  cacheStatus,
+  deduped = false,
+  debug = null,
+}) {
+  const encoder = new TextEncoder();
+
+  const cachedStream = new ReadableStream({
+    start(controller) {
+      controller.enqueue(
+        encodeSseEvent(encoder, "delta", {
+          text,
+          cached: true,
+          ...(deduped ? { deduped: true } : {}),
+        })
+      );
+
+      controller.enqueue(
+        encodeSseEvent(encoder, "done", {
+          finalText: text,
+          hasContent: true,
+          cached: true,
+          ...(deduped ? { deduped: true } : {}),
+          ...(debug ? { debug } : {}),
+        })
+      );
+
+      controller.close();
+    },
+  });
+
+  const responseHeaders = new Headers(headers);
+  responseHeaders.set("X-Cache", cacheStatus);
+
+  return new Response(cachedStream, {
+    headers: responseHeaders,
+  });
+}
+
 const extractChunkText = (chunk) => {
   if (!chunk) return "";
 
@@ -88,7 +131,8 @@ export async function OPTIONS(request) {
 }
 
 export async function POST(request) {
-  const isDev = process.env.NODE_ENV !== "production";
+  const env = getEnv();
+  const isDev = env.NODE_ENV !== "production";
 
   const headers = buildSseHeaders(request);
 
@@ -126,8 +170,8 @@ export async function POST(request) {
     return respondSseError(request, ERROR_CODES.UNAUTHORIZED);
   }
 
-  if (!isFeatureEnabled("chat")) {
-    return respondError(ERROR_CODES.INTERNAL_SERVER_ERROR, "GEMINI_API_KEY is not configured");
+ if (!isFeatureEnabled("chat")) {
+    return respondSseError(request, ERROR_CODES.AI_SERVICE_ERROR, "AI service is not configured. Please contact support.");
   }
 
   let prompt;
@@ -176,7 +220,6 @@ export async function POST(request) {
     return respondError(ERROR_CODES.USER_NOT_FOUND);
   }
   const cacheUser = userId || request.headers.get("x-forwarded-for") || "anonymous";
-  const cacheKey = buildCacheKey(cacheUser, promptCheck.prompt);
 
   const existingCachedResponse = await getCachedResponse(
     cacheUser,
@@ -184,36 +227,12 @@ export async function POST(request) {
   );
 
   if (existingCachedResponse) {
-  const encoder = new TextEncoder();
-
-  const cachedStream = new ReadableStream({
-    start(controller) {
-      controller.enqueue(
-        encodeSseEvent(encoder, "delta", {
-          text: existingCachedResponse,
-          cached: true,
-        })
-      );
-
-      controller.enqueue(
-        encodeSseEvent(encoder, "done", {
-          finalText: existingCachedResponse,
-          hasContent: true,
-          cached: true,
-        })
-      );
-
-      controller.close();
-    },
-  });
-
-  return new Response(cachedStream, {
-    headers: {
-      ...SSE_HEADERS,
-      "X-Cache": "HIT",
-    },
-  });
-}
+    return createCachedSseResponse({
+      text: existingCachedResponse,
+      headers: SSE_BASE_HEADERS,
+      cacheStatus: "HIT",
+    });
+  }
 
   // Check for pending request (deduplication)
   const pendingRequest = await getPendingGenerationRequest(
@@ -235,37 +254,13 @@ export async function POST(request) {
     );
 
     if (cachedAfterPending) {
-      const encoder = new TextEncoder();
-      const cachedStream = new ReadableStream({
-        start(controller) {
-          controller.enqueue(
-            encodeSseEvent(encoder, "delta", {
-              text: cachedAfterPending,
-              cached: true,
-              deduped: true,
-            })
-          );
-
-          controller.enqueue(
-            encodeSseEvent(encoder, "done", {
-              finalText: cachedAfterPending,
-              hasContent: true,
-              cached: true,
-              deduped: true,
-            })
-          );
-
-          controller.close();
-        },
-      });
-
-      return new Response(cachedStream, {
-        headers: {
-          ...SSE_HEADERS,
-          "X-Cache": "DEDUP",
-        },
-      });
-    }
+  return createCachedSseResponse({
+    text: cachedAfterPending,
+    headers: SSE_BASE_HEADERS,
+    cacheStatus: "DEDUP",
+    deduped: true,
+  });
+}
   }
 
   if (conversationId) {
@@ -328,8 +323,11 @@ export async function POST(request) {
   });
 
   const aiContext = buildUserAiContext(user, recentMessages.reverse());
+<<<<<<< HEAD
+=======
   const clientIp = request.headers.get("x-real-ip") || "anonymous";
-  const cacheUser = userId || clientIp;
+  cacheUser = userId || clientIp;
+>>>>>>> d7f2f9f (dockerization and production check)
 
   const restrictedPrompt = buildSecurePrompt({
     context: aiContext.context,
@@ -360,12 +358,16 @@ Rules:
     ],
   });
 
-  const existingCachedResponse = await getCachedResponse(
+<<<<<<< HEAD
+  const restrictedCachedResponse = await getCachedResponse(
+=======
+  existingCachedResponse = await getCachedResponse(
+>>>>>>> d7f2f9f (dockerization and production check)
     cacheUser,
     restrictedPrompt
   );
 
-  if (existingCachedResponse) {
+  if (restrictedCachedResponse) {
     if (conversationId && (user?.saveChatHistory ?? true)) {
       try {
         await db.$transaction(
@@ -374,7 +376,7 @@ Rules:
               data: {
                 conversationId,
                 role: "assistant",
-                content: existingCachedResponse,
+                content: restrictedCachedResponse,  
               },
             });
 
@@ -396,39 +398,16 @@ Rules:
 
     const encoder = new TextEncoder();
 
-    const cachedStream = new ReadableStream({
-      start(controller) {
-        controller.enqueue(
-          encodeSseEvent(encoder, "delta", {
-            text: existingCachedResponse,
-            cached: true,
-          })
-        );
-
-        controller.enqueue(
-          encodeSseEvent(encoder, "done", {
-            finalText: existingCachedResponse,
-            hasContent: true,
-            cached: true,
-            ...(isDev && {
-              debug: {
-                ...aiContext.debug,
-                promptContext: aiContext.context,
-              },
-            }),
-          })
-        );
-
-        controller.close();
-      },
-    });
-
-    return new Response(cachedStream, {
-      headers: (() => {
-        const h = new Headers(headers);
-        h.set("X-Cache", "HIT");
-        return h;
-      })(),
+       return createCachedSseResponse({
+      text: restrictedCachedResponse,
+      headers,
+      cacheStatus: "HIT",
+      debug: isDev
+        ? {
+            ...aiContext.debug,
+            promptContext: aiContext.context,
+          }
+        : null,
     });
   }
 

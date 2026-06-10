@@ -31,7 +31,6 @@ function normalizeSettings(settings) {
   };
 }
 
-export async function getUserSettings() {
 function normalizeSettingsInput(data) {
   return {
     notifications: Boolean(data.notifications),
@@ -40,18 +39,20 @@ function normalizeSettingsInput(data) {
 }
 
 export async function getUserSettings() {
-  const { userId } = await auth();
-
-  if (!userId) {
-export async function getUserSettings(userId) {
+<<<<<<< HEAD
   const { userId: authenticatedUserId } = await auth();
 
   if (!authenticatedUserId) {
+=======
+  const { userId } = await auth();
+
+  if (!userId) {
+>>>>>>> d7f2f9f (dockerization and production check)
     throw new Error("Unauthorized");
   }
 
   try {
-    const user = await getUserByClerkId(authenticatedUserId);
+    const user = await getUserByClerkId(userId);
 
     const existingSettings = await db.userSettings.findUnique({
       where: { userId: user.id },
@@ -60,15 +61,14 @@ export async function getUserSettings(userId) {
     return normalizeSettings(existingSettings);
   } catch (error) {
     console.error("[Settings Action] Error in getUserSettings:", error.message);
-    // Return default settings if DB call fails (e.g. table missing)
     return normalizeSettings(null);
   }
 }
 
 export async function updateUserSettings(data) {
-  const { userId: authenticatedUserId } = await auth();
+  const { userId } = await auth();
 
-  if (!authenticatedUserId) {
+  if (!userId) {
     throw new Error("Unauthorized");
   }
 
@@ -79,7 +79,7 @@ export async function updateUserSettings(data) {
       return { success: false, errors: validation.errors };
     }
 
-    const user = await getUserByClerkId(authenticatedUserId);
+    const user = await getUserByClerkId(userId);
     const settingsData = validation.data;
 
     const settings = await db.userSettings.upsert({

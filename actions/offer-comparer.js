@@ -10,6 +10,9 @@ export async function compareOffers(offers) {
   const { userId } = await auth();
   if (!userId) return { success: false, errors: { _form: ["Unauthorized"] } };
 
+  const user = await db.user.findUnique({ where: { clerkUserId: userId } });
+  if (!user) return { success: false, errors: { _form: ["User not found"] } };
+
   if (!offers || offers.length < 2) {
     return { success: false, errors: { _form: ["Please provide at least two offers to compare."] } };
   }
@@ -45,7 +48,7 @@ export async function compareOffers(offers) {
 
     const record = await db.offerComparison.create({
       data: {
-        userId,
+        userId: user.id,
         offers: processedOffers,
         analysis: parsedData,
       },
@@ -63,8 +66,11 @@ export async function getOfferComparisons() {
   const { userId } = await auth();
   if (!userId) return { success: false, data: [] };
 
+  const user = await db.user.findUnique({ where: { clerkUserId: userId } });
+  if (!user) return { success: false, data: [] };
+
   const records = await db.offerComparison.findMany({
-    where: { userId },
+    where: { userId: user.id },
     orderBy: { createdAt: "desc" },
   });
 

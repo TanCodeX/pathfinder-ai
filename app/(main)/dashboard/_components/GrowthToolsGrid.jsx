@@ -6,7 +6,7 @@ import {
   ScanSearch, Mic, FileText, Mail, Briefcase, ChevronRight,
   Flame, Linkedin, Star, Video, LayoutList, Lightbulb, 
   DollarSign, Calculator, Send, ArrowRightLeft, CalendarClock,
-  DoorOpen, TrendingUp, FileSignature, BrainCircuit
+  DoorOpen, TrendingUp, FileSignature, BrainCircuit, Compass
 } from "lucide-react";
 
 const TOOL_CATEGORIES = [
@@ -44,6 +44,7 @@ const TOOL_CATEGORIES = [
     ]
   },
   {
+  {
     category: "Transitions & Growth",
     tools: [
       { name: "Promotion Coach", desc: "Get that raise", icon: TrendingUp, color: "bg-purple-500/10 text-purple-500 border-purple-500/20", href: "/promotion-negotiator" },
@@ -51,6 +52,7 @@ const TOOL_CATEGORIES = [
       { name: "30-60-90 Plan", desc: "New job success", icon: CalendarClock, color: "bg-indigo-500/10 text-indigo-500 border-indigo-500/20", href: "/onboarding-plan" },
       { name: "Freelance Proposals", desc: "Win contracts", icon: FileSignature, color: "bg-teal-500/10 text-teal-500 border-teal-500/20", href: "/freelance-proposal" },
       { name: "Resignation Letter", desc: "Quit professionally", icon: DoorOpen, color: "bg-red-500/10 text-red-500 border-red-500/20", href: "/resignation-letter" },
+      { name: "Explore Careers", desc: "Discover & Compare", icon: Compass, color: "bg-cyan-500/10 text-cyan-500 border-cyan-500/20", href: "/explore" },
     ]
   }
 ];

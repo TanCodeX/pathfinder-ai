@@ -26,15 +26,15 @@ export default async function RoadmapPage() {
               </p>
             </div>
 
-            <Link href="/roadmap/generate">
-              <Button
-                size="lg"
-                className="h-14 px-8 rounded-2xl font-bold shadow-xl shadow-primary/20 hover:scale-105 transition-all group"
-              >
+            <Button asChild
+              size="lg"
+              className="h-14 px-8 rounded-2xl font-bold shadow-xl shadow-primary/20 hover:scale-105 transition-all group"
+            >
+              <Link href="/roadmap/generate">
                 <Sparkles className="h-5 w-5 mr-2 transition-transform group-hover:scale-110" />
                 {roadmap ? "Regenerate Roadmap" : "Generate Roadmap"}
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </div>
         </div>
 
@@ -54,12 +54,12 @@ export default async function RoadmapPage() {
                     Make sure your profile is complete in Settings first.
                   </p>
                 </div>
-                <Link href="/roadmap/generate">
-                  <Button size="lg" className="rounded-2xl font-bold">
+                <Button asChild size="lg" className="rounded-2xl font-bold">
+                  <Link href="/roadmap/generate">
                     <Sparkles className="h-5 w-5 mr-2" />
                     Generate Your Roadmap
-                  </Button>
-                </Link>
+                  </Link>
+                </Button>
               </div>
             )}
           </div>

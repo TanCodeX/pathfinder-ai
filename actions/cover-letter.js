@@ -107,58 +107,103 @@ Respond ONLY with a valid JSON object in this exact format (no markdown, no code
  * Fetches all cover letters for the signed-in user, newest first.
  */
 export async function getCoverLetters() {
-  const { userId } = await auth();
-  if (!userId) return [];
+  try {
+    const { userId } = await auth();
+    if (!userId) return [];
 
-  const user = await db.user.findUnique({
-    where: { clerkUserId: userId },
-  });
-  if (!user) return [];
+    const user = await db.user.findUnique({
+      where: { clerkUserId: userId },
+    });
+    if (!user) return [];
 
-  return db.coverLetter.findMany({
-    where: { userId: user.id },
-    orderBy: { createdAt: "desc" },
-  });
+    return db.coverLetter.findMany({
+      where: { userId: user.id },
+      orderBy: { createdAt: "desc" },
+    });
+  } catch (error) {
+    console.error("Error fetching cover letters:", error);
+    return [];
+  }
 }
 
 /**
  * Fetches a single cover letter by ID (ownership-checked).
  */
 export async function getCoverLetter(id) {
-  const { userId } = await auth();
-  if (!userId) return null;
+  try {
+    const { userId } = await auth();
+    if (!userId) return null;
 
-  const user = await db.user.findUnique({
-    where: { clerkUserId: userId },
-  });
-  if (!user) return null;
+    const user = await db.user.findUnique({
+      where: { clerkUserId: userId },
+    });
+    if (!user) return null;
 
-  return db.coverLetter.findFirst({
-    where: {
-      id,
-      userId: user.id,
-    },
-  });
+    return db.coverLetter.findFirst({
+      where: {
+        id,
+        userId: user.id,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching cover letter:", error);
+    return null;
+  }
 }
 
 /**
  *Deletes a specific cover letter record with strict ownership validation.
  */
 export async function deleteCoverLetter(id) {
-  const { userId } = await auth();
-  if (!userId) return { success: false, errors: { _form: ["Unauthorized"] } };
+  try {
+<<<<<<< HEAD
+    if (!id || typeof id !== "string" || id.trim().length === 0) {
+      return { success: false, errors: { _form: ["Invalid cover letter identifier."] } };
+    }
 
-  const user = await db.user.findUnique({
-    where: { clerkUserId: userId },
-  });
-  if (!user) return { success: false, errors: { _form: ["User not found"] } };
+    const { userId } = await auth();
+    if (!userId) return { success: false, errors: { _form: ["Unauthorized"] } };
 
-  await db.coverLetter.deleteMany({
-    where: {
-      id,
-      userId: user.id,
-    },
-  });
+    const user = await db.user.findUnique({
+      where: { clerkUserId: userId },
+    });
+    if (!user) return { success: false, errors: { _form: ["User not found"] } };
 
-  return { success: true };
+    const { count } = await db.coverLetter.deleteMany({
+      where: {
+        id: id.trim(),
+        userId: user.id,
+      },
+    });
+
+    if (count === 0) {
+      return { success: false, errors: { _form: ["Cover letter not found or already deleted."] } };
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete cover letter:", error);
+    return { success: false, errors: { _form: [error.message || String(error)] } };
+=======
+    const { userId } = await auth();
+    if (!userId) return { success: false, errors: { _form: ["Unauthorized"] } };
+
+    const user = await db.user.findUnique({
+      where: { clerkUserId: userId },
+    });
+    if (!user) return { success: false, errors: { _form: ["User not found"] } };
+
+    await db.coverLetter.deleteMany({
+      where: {
+        id,
+        userId: user.id,
+      },
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting cover letter:", error);
+    return { success: false, errors: { _form: [error.message] } };
+>>>>>>> d7f2f9f (dockerization and production check)
+  }
 }

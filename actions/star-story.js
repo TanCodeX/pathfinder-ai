@@ -10,6 +10,9 @@ export async function generateStarStory(rawExperience) {
   const { userId } = await auth();
   if (!userId) return { success: false, errors: { _form: ["Unauthorized"] } };
 
+  const user = await db.user.findUnique({ where: { clerkUserId: userId } });
+  if (!user) return { success: false, errors: { _form: ["User not found"] } };
+
   if (!rawExperience || rawExperience.trim().length < 20) {
     return { success: false, errors: { _form: ["Please provide a valid experience description."] } };
   }
@@ -37,7 +40,7 @@ export async function generateStarStory(rawExperience) {
 
     const record = await db.starStory.create({
       data: {
-        userId,
+        userId: user.id,
         rawExperience,
         starContent: parsedData,
       },
@@ -55,8 +58,11 @@ export async function getStarStories() {
   const { userId } = await auth();
   if (!userId) return { success: false, data: [] };
 
+  const user = await db.user.findUnique({ where: { clerkUserId: userId } });
+  if (!user) return { success: false, data: [] };
+
   const records = await db.starStory.findMany({
-    where: { userId },
+    where: { userId: user.id },
     orderBy: { createdAt: "desc" },
   });
 

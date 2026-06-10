@@ -10,6 +10,9 @@ export async function generateCheatSheet(company, role) {
   const { userId } = await auth();
   if (!userId) return { success: false, errors: { _form: ["Unauthorized"] } };
 
+  const user = await db.user.findUnique({ where: { clerkUserId: userId } });
+  if (!user) return { success: false, errors: { _form: ["User not found"] } };
+
   if (!company || !role) {
     return { success: false, errors: { _form: ["Company and Role are required."] } };
   }
@@ -45,7 +48,7 @@ export async function generateCheatSheet(company, role) {
 
     const record = await db.interviewCheatSheet.create({
       data: {
-        userId,
+        userId: user.id,
         company,
         role,
         content: parsedData,
@@ -64,8 +67,11 @@ export async function getCheatSheets() {
   const { userId } = await auth();
   if (!userId) return { success: false, data: [] };
 
+  const user = await db.user.findUnique({ where: { clerkUserId: userId } });
+  if (!user) return { success: false, data: [] };
+
   const records = await db.interviewCheatSheet.findMany({
-    where: { userId },
+    where: { userId: user.id },
     orderBy: { createdAt: "desc" },
   });
 

@@ -102,6 +102,7 @@ export default function Footer() {
               <li><Link href="#features" className="text-muted-foreground/80 hover:text-primary transition-colors">Features</Link></li>
               <li><Link href="#how-it-works" className="text-muted-foreground/80 hover:text-primary transition-colors">How it Works</Link></li>
               <li><Link href="#stats" className="text-muted-foreground/80 hover:text-primary transition-colors">Success Stories</Link></li>
+               <li><Link href="/help" className="text-muted-foreground/80 hover:text-primary transition-colors">Help</Link></li>
               <li><Link href="#question" className="text-muted-foreground/80 hover:text-primary transition-colors">FAQ</Link></li>
             </ul>
           </motion.div>

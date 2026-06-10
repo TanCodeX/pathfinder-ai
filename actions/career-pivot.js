@@ -10,6 +10,9 @@ export async function generatePivotStrategy(currentRole, targetRole) {
   const { userId } = await auth();
   if (!userId) return { success: false, errors: { _form: ["Unauthorized"] } };
 
+  const user = await db.user.findUnique({ where: { clerkUserId: userId } });
+  if (!user) return { success: false, errors: { _form: ["User not found"] } };
+
   if (!currentRole || !targetRole) {
     return { success: false, errors: { _form: ["Both current and target roles are required."] } };
   }
@@ -46,7 +49,7 @@ export async function generatePivotStrategy(currentRole, targetRole) {
 
     const record = await db.careerPivot.create({
       data: {
-        userId,
+        userId: user.id,
         currentRole,
         targetRole,
         analysis: parsedData,
@@ -65,8 +68,11 @@ export async function getCareerPivots() {
   const { userId } = await auth();
   if (!userId) return { success: false, data: [] };
 
+  const user = await db.user.findUnique({ where: { clerkUserId: userId } });
+  if (!user) return { success: false, data: [] };
+
   const records = await db.careerPivot.findMany({
-    where: { userId },
+    where: { userId: user.id },
     orderBy: { createdAt: "desc" },
   });
 

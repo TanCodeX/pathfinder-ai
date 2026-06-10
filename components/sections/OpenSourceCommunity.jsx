@@ -73,34 +73,26 @@ export function OpenSourceCommunity() {
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-            <a
-              href="https://github.com/harshdwivediiiii/pathfinder-ai"
-              target="_blank"
-              rel="noopener noreferrer"
+            <Button asChild
+              size="lg"
+              className="h-14 px-10 rounded-2xl text-base font-bold shadow-xl shadow-primary/20 hover:scale-105 transition-transform duration-300 group bg-primary text-primary-foreground"
             >
-              <Button
-                size="lg"
-                className="h-14 px-10 rounded-2xl text-base font-bold shadow-xl shadow-primary/20 hover:scale-105 transition-transform duration-300 group bg-primary text-primary-foreground"
-              >
+              <a href="https://github.com/harshdwivediiiii/pathfinder-ai" target="_blank" rel="noopener noreferrer">
                 <Github className="mr-2 h-5 w-5" />
                 Star on GitHub
                 <Sparkles className="ml-2 h-4 w-4 text-primary-foreground/60" />
-              </Button>
-            </a>
-            <a
-              href="https://github.com/harshdwivediiiii/pathfinder-ai/issues"
-              target="_blank"
-              rel="noopener noreferrer"
+              </a>
+            </Button>
+            <Button asChild
+              size="lg"
+              variant="outline"
+              className="h-14 px-10 rounded-2xl text-base font-bold border-border/50 glass hover:bg-muted/50 transition-all duration-300 group"
             >
-              <Button
-                size="lg"
-                variant="outline"
-                className="h-14 px-10 rounded-2xl text-base font-bold border-border/50 glass hover:bg-muted/50 transition-all duration-300 group"
-              >
+              <a href="https://github.com/harshdwivediiiii/pathfinder-ai/issues" target="_blank" rel="noopener noreferrer">
                 Start Contributing
                 <Sparkles className="ml-2 h-4 w-4" />
-              </Button>
-            </a>
+              </a>
+            </Button>
           </div>
         </FadeUp>
 

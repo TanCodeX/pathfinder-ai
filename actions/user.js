@@ -29,37 +29,35 @@ export async function updateUser(data) {
   });
   if (!user) throw new Error("User not found");
 
+  // Generate industry insights outside the DB transaction to avoid
+  // long-running external calls inside a DB tx (which can cause timeouts).
+  let precomputedInsights = null;
   try {
-    // Generate industry insights outside the DB transaction to avoid
-    // long-running external calls inside a DB tx (which can cause timeouts).
-    let precomputedInsights = null;
-    try {
-      precomputedInsights = await generateAIInsights(
-        profileData.industry,
-        profileData
-      );
-    } catch (e) {
-      console.error("Failed to generate insights pre-transaction:", e);
-      precomputedInsights = null;
-    }
+    precomputedInsights = await generateAIInsights(
+      profileData.industry,
+      profileData
+    );
+  } catch (e) {
+    console.error("Failed to generate insights pre-transaction:", e);
+    precomputedInsights = null;
+  }
 
+  try {
+    const result = await db.$transaction(async (tx) => {
       const industryInsight = precomputedInsights
         ? await tx.industryInsight.upsert({
-            where: { industry: data.industry },
+            where: { industry: profileData.industry },
             update: {},
             create: {
-              industry: data.industry,
+              industry: profileData.industry,
               ...precomputedInsights,
               nextUpdate: getIndustryInsightRefreshTime(),
             },
           })
         : await tx.industryInsight.findUnique({
-            where: { industry: data.industry },
+            where: { industry: profileData.industry },
           });
 
-      /* ---------------------------------------------- *
-       * 2. Update the user with the new profile fields *
-       * -------------------------------------------- */
       const updatedUser = await tx.user.update({
         where: { id: user.id },
         data: {
@@ -72,15 +70,13 @@ export async function updateUser(data) {
           skills: profileData.skills ?? [],
         },
       });
-
       return { updatedUser, industryInsight };
-    },
-    { timeout: 10_000 }
-  );
+    });
 
     revalidatePath("/");
     revalidatePath("/settings");
-    return result.updatedUser;
+
+    return result;
   } catch (err) {
     console.error("Error updating user and industry:", err);
     throw new Error("Failed to update profile");
@@ -93,12 +89,14 @@ export async function updateUser(data) {
  * Returns: { isOnboarded: boolean }
  */
 export async function getUserOnboardingStatus() {
-  const { userId } = await auth();
+  try {
+    const { userId } = await auth();
 
-  if (!userId) {
-    return { isOnboarded: false, user: null, isSignedIn: false };
-  }
+    if (!userId) {
+      return { isOnboarded: false, user: null, isSignedIn: false };
+    }
 
+<<<<<<< HEAD
   /* 1 ▸ look up by Clerk ID */
   let user = await db.user.findUnique({
     where: { clerkUserId: userId },
@@ -106,7 +104,7 @@ export async function getUserOnboardingStatus() {
 
   if (!user) {
     /* 2 ▸ pull data from Clerk */
-    const backend   = await clerkClient();
+    const backend = await clerkClient();
     const clerkUser = await backend.users.getUser(userId);
 
     const email = clerkUser.emailAddresses?.[0]?.emailAddress;
@@ -114,23 +112,43 @@ export async function getUserOnboardingStatus() {
 
     /* 2 ▸ create a brand-new row (use upsert to prevent race conditions) */
     user = await db.user.upsert({
+=======
+    let user = await db.user.findUnique({
+>>>>>>> d7f2f9f (dockerization and production check)
       where: { clerkUserId: userId },
-      update: {},
-      create: {
-        clerkUserId: userId,
-        email,
-        name: clerkUser.firstName ?? "",
-        imageUrl: clerkUser.imageUrl ?? "",
-      },
     });
-  }
 
-  console.log("===== ONBOARDING DEBUG =====");
-console.log("User ID:", userId);
-console.log("User:", user);
-console.log("Industry:", user?.industry);
-console.log("isOnboarded:", Boolean(user?.industry));
-console.log("===========================");
+    if (!user) {
+      const backend = await clerkClient();
+      const clerkUser = await backend.users.getUser(userId);
+
+      const email = clerkUser.emailAddresses?.[0]?.emailAddress;
+      if (!email) {
+        return { isOnboarded: false, user: null, isSignedIn: true, error: "Email not found" };
+      }
+
+      user = await db.user.upsert({
+        where: { clerkUserId: userId },
+        update: {},
+        create: {
+          clerkUserId: userId,
+          email,
+          name: clerkUser.firstName ?? "",
+          imageUrl: clerkUser.imageUrl ?? "",
+        },
+      });
+    }
+
+    return {
+      isOnboarded: Boolean(user.industry),
+      user,
+      isSignedIn: true,
+    };
+  } catch (error) {
+    console.error("Error getting user onboarding status:", error);
+    return { isOnboarded: false, user: null, isSignedIn: false, error: error.message };
+  }
+<<<<<<< HEAD
 
 return {
   isOnboarded: Boolean(user.industry),
@@ -138,3 +156,6 @@ return {
   isSignedIn: true,
 };
 }
+=======
+}
+>>>>>>> d7f2f9f (dockerization and production check)
