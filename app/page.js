@@ -2,7 +2,15 @@
 
 import Link from "next/link";
 import { motion, useScroll, useTransform, useSpring } from "framer-motion";
-import { ArrowRight, Sparkles, ChevronRight, FileText, Target, Briefcase, Star } from "lucide-react";
+import {
+  ArrowRight,
+  Sparkles,
+  ChevronRight,
+  FileText,
+  Target,
+  Briefcase,
+  Star,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
@@ -16,7 +24,12 @@ import { TestimonialsSection } from "@/components/sections/TestimonialsSection";
 import { PricingSection } from "@/components/sections/PricingSection";
 import { CTASection } from "@/components/sections/CTASection";
 import { OpenSourceCommunity } from "@/components/sections/OpenSourceCommunity";
-import { FadeUp, StaggerContainer, StaggerItem, RevealText } from "@/components/motion";
+import {
+  FadeUp,
+  StaggerContainer,
+  StaggerItem,
+  RevealText,
+} from "@/components/motion";
 import { MagneticButton } from "@/components/motion/magnetic-button";
 import { TiltCard } from "@/components/motion/tilt-card";
 import { features } from "@/data/features";
@@ -51,9 +64,13 @@ export default function LandingPage() {
           <div className="absolute bottom-0 left-1/4 w-[600px] h-[600px] bg-blue-500/5 rounded-full blur-[140px]" />
         </div>
 
-        <motion.div style={{ opacity: heroOpacity, scale: heroScale }} className="w-full">
+        <motion.div
+          style={{ opacity: heroOpacity, scale: heroScale }}
+          className="w-full"
+        >
           <div className="container mx-auto px-4 md:px-6 relative z-10">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr_1fr] gap-20 lg:gap-40 items-center">
+              {" "}
               {/* Left Column */}
               <div className="space-y-10">
                 <motion.div
@@ -76,18 +93,28 @@ export default function LandingPage() {
                   <motion.h1
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.15, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-                    className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-[0.9] text-foreground"
+                    transition={{
+                      delay: 0.15,
+                      duration: 0.8,
+                      ease: [0.16, 1, 0.3, 1],
+                    }}
+                    className="max-w-[700px] text-5xl md:text-7xl lg:text-7xl font-bold tracking-tight leading-[0.95]"
                   >
                     Your Career,
                     <br />
-                    <span className="text-gradient-primary">Amplified by AI.</span>
+                    <span className="text-gradient-primary">
+                      Amplified by AI.
+                    </span>
                   </motion.h1>
 
                   <motion.p
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                    transition={{
+                      delay: 0.3,
+                      duration: 0.8,
+                      ease: [0.16, 1, 0.3, 1],
+                    }}
                     className="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-lg"
                   >
                     From ATS resume scoring and mock interviews, to salary negotiation and freelance proposals. Access an arsenal of 20+ specialized AI tools designed to accelerate your career growth.
@@ -97,7 +124,11 @@ export default function LandingPage() {
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.45, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                  transition={{
+                    delay: 0.45,
+                    duration: 0.8,
+                    ease: [0.16, 1, 0.3, 1],
+                  }}
                   className="flex flex-col sm:flex-row items-start gap-4"
                 >
                   <MagneticButton asChild>
@@ -115,7 +146,9 @@ export default function LandingPage() {
                     size="lg"
                     variant="outline"
                     onClick={() => {
-                      document.getElementById("features")?.scrollIntoView({ behavior: "smooth" });
+                      document
+                        .getElementById("features")
+                        ?.scrollIntoView({ behavior: "smooth" });
                     }}
                     className="h-14 px-8 rounded-2xl glass hover:bg-muted/50 border-border/50 transition-all duration-300 font-bold group text-base"
                   >
@@ -143,22 +176,32 @@ export default function LandingPage() {
                   <span>Trusted by 10,000+ professionals</span>
                 </motion.div>
               </div>
-
               {/* Right Column - Interactive Dashboard Preview */}
-              <div className="relative h-[500px] lg:h-[600px] hidden lg:block">
+              <div className="relative h-[500px] lg:h-[600px] hidden lg:block pl-32">
                 <motion.div
                   initial={{ opacity: 0, x: 40 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.4, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                  transition={{
+                    delay: 0.4,
+                    duration: 0.8,
+                    ease: [0.16, 1, 0.3, 1],
+                  }}
                   className="absolute top-0 right-0 w-full h-full"
                 >
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-primary/10 rounded-full blur-[100px]" />
 
                   {/* Main dashboard card */}
-                  <TiltCard tiltDegree={8} className="absolute top-[8%] right-[8%] w-72">
+                  <TiltCard
+                    tiltDegree={8}
+                    className="absolute top-[10%] right-[15%] w-72"
+                  >
                     <motion.div
                       animate={{ y: [0, -8, 0] }}
-                      transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                      transition={{
+                        duration: 6,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                      }}
                       className="p-6 glass rounded-2xl border border-border/50 shadow-xl"
                     >
                       <div className="flex items-center gap-3 mb-4">
@@ -166,8 +209,12 @@ export default function LandingPage() {
                           <FileText className="h-5 w-5" />
                         </div>
                         <div>
-                          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Resume Score</p>
-                          <p className="text-2xl font-black text-foreground">94%</p>
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                            Resume Score
+                          </p>
+                          <p className="text-2xl font-black text-foreground">
+                            94%
+                          </p>
                         </div>
                       </div>
                       <div className="h-2 rounded-full bg-muted/50 overflow-hidden">
@@ -175,18 +222,32 @@ export default function LandingPage() {
                           className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-emerald-400"
                           initial={{ width: "0%" }}
                           animate={{ width: "94%" }}
-                          transition={{ duration: 1.5, delay: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                          transition={{
+                            duration: 1.5,
+                            delay: 0.8,
+                            ease: [0.16, 1, 0.3, 1],
+                          }}
                         />
                       </div>
-                      <p className="text-[10px] text-muted-foreground mt-2 font-medium">ATS Optimized</p>
+                      <p className="text-[10px] text-muted-foreground mt-2 font-medium">
+                        ATS Optimized
+                      </p>
                     </motion.div>
                   </TiltCard>
 
                   {/* Career readiness */}
-                  <TiltCard tiltDegree={6} className="absolute top-[3%] right-[2%] w-48">
+                  <TiltCard
+                    tiltDegree={6}
+                    className="absolute top-[8%] left-[40%] w-48"
+                  >
                     <motion.div
                       animate={{ y: [0, 10, 0] }}
-                      transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+                      transition={{
+                        duration: 5,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                        delay: 1,
+                      }}
                       className="p-5 glass rounded-2xl border border-border/50 shadow-xl"
                     >
                       <div className="flex items-center gap-3">
@@ -194,18 +255,30 @@ export default function LandingPage() {
                           <Target className="h-4 w-4" />
                         </div>
                         <div>
-                          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Readiness</p>
-                          <p className="text-lg font-black text-foreground">92%</p>
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                            Readiness
+                          </p>
+                          <p className="text-lg font-black text-foreground">
+                            92%
+                          </p>
                         </div>
                       </div>
                     </motion.div>
                   </TiltCard>
 
                   {/* Interview status */}
-                  <TiltCard tiltDegree={7} className="absolute bottom-[18%] left-[2%] w-52">
+                  <TiltCard
+                    tiltDegree={7}
+                    className="absolute top-[1%] right-[12%] w-52"
+                  >
                     <motion.div
                       animate={{ y: [0, -6, 0] }}
-                      transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+                      transition={{
+                        duration: 7,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                        delay: 0.5,
+                      }}
                       className="p-5 glass rounded-2xl border border-border/50 shadow-xl"
                     >
                       <div className="flex items-center gap-3">
@@ -213,18 +286,30 @@ export default function LandingPage() {
                           <Briefcase className="h-4 w-4" />
                         </div>
                         <div>
-                          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Interviews</p>
-                          <p className="text-lg font-black text-foreground">Ready</p>
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                            Interviews
+                          </p>
+                          <p className="text-lg font-black text-foreground">
+                            Ready
+                          </p>
                         </div>
                       </div>
                     </motion.div>
                   </TiltCard>
 
                   {/* Job match */}
-                  <TiltCard tiltDegree={5} className="absolute bottom-[35%] right-[25%] w-44">
+                  <TiltCard
+                    tiltDegree={5}
+                    className="absolute top-[1%] left-[34%] w-44"
+                  >
                     <motion.div
                       animate={{ y: [0, 12, 0] }}
-                      transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
+                      transition={{
+                        duration: 8,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                        delay: 1.5,
+                      }}
                       className="p-5 glass rounded-2xl border border-border/50 shadow-xl"
                     >
                       <div className="flex items-center gap-3">
@@ -232,8 +317,12 @@ export default function LandingPage() {
                           <Star className="h-4 w-4" />
                         </div>
                         <div>
-                          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Match</p>
-                          <p className="text-lg font-black text-foreground">95%</p>
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                            Match
+                          </p>
+                          <p className="text-lg font-black text-foreground">
+                            95%
+                          </p>
                         </div>
                       </div>
                     </motion.div>
@@ -261,7 +350,8 @@ export default function LandingPage() {
               <span className="text-gradient-primary">Modern Professional</span>
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Experience a suite of AI tools meticulously designed to accelerate your career growth.
+              Experience a suite of AI tools meticulously designed to accelerate
+              your career growth.
             </p>
           </FadeUp>
 
@@ -278,8 +368,12 @@ export default function LandingPage() {
                           <Icon className="w-6 h-6" />
                         </div>
                         <div className="space-y-2">
-                          <h4 className="text-lg font-bold tracking-tight text-foreground">{f.title}</h4>
-                          <p className="text-sm text-muted-foreground leading-relaxed">{f.description}</p>
+                          <h4 className="text-lg font-bold tracking-tight text-foreground">
+                            {f.title}
+                          </h4>
+                          <p className="text-sm text-muted-foreground leading-relaxed">
+                            {f.description}
+                          </p>
                         </div>
                         <div className="flex items-center text-[10px] font-bold uppercase tracking-widest text-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                           Explore <ChevronRight className="ml-1 h-3 w-3" />
@@ -316,7 +410,10 @@ export default function LandingPage() {
       </section>
 
       {/* ───────────── HOW IT WORKS ───────────── */}
-      <section id="how-it-works" className="relative py-32 md:py-48 scroll-mt-20">
+      <section
+        id="how-it-works"
+        className="relative py-32 md:py-48 scroll-mt-20"
+      >
         <div className="container mx-auto px-4 md:px-6">
           <FadeUp className="max-w-3xl mx-auto text-center mb-20 space-y-4">
             <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-xs font-bold uppercase tracking-widest text-primary">
@@ -332,7 +429,10 @@ export default function LandingPage() {
             <div className="hidden lg:block absolute top-1/2 left-0 w-full h-px bg-gradient-to-r from-transparent via-border to-transparent -translate-y-1/2 -z-10" />
             {howItWorks.map((step, i) => (
               <StaggerItem key={step.title}>
-                <TiltCard tiltDegree={4} className="flex flex-col items-center text-center space-y-5">
+                <TiltCard
+                  tiltDegree={4}
+                  className="flex flex-col items-center text-center space-y-5"
+                >
                   <div className="relative">
                     <div className="h-16 w-16 rounded-2xl bg-background border border-border/50 flex items-center justify-center shadow-lg">
                       <div className="text-primary">{step.icon}</div>
@@ -342,8 +442,12 @@ export default function LandingPage() {
                     </div>
                   </div>
                   <div className="space-y-1.5">
-                    <h4 className="text-base font-bold tracking-tight text-foreground">{step.title}</h4>
-                    <p className="text-xs text-muted-foreground leading-relaxed max-w-[180px]">{step.description}</p>
+                    <h4 className="text-base font-bold tracking-tight text-foreground">
+                      {step.title}
+                    </h4>
+                    <p className="text-xs text-muted-foreground leading-relaxed max-w-[180px]">
+                      {step.description}
+                    </p>
                   </div>
                 </TiltCard>
               </StaggerItem>
@@ -362,8 +466,12 @@ export default function LandingPage() {
       <section id="question" className="relative py-32 md:py-48 scroll-mt-20">
         <div className="container mx-auto px-4 md:px-6">
           <FadeUp className="max-w-3xl mx-auto text-center mb-16 space-y-4">
-            <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-foreground">Got Questions?</h2>
-            <p className="text-muted-foreground">Everything you need to know about PathFinder AI</p>
+            <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-foreground">
+              Got Questions?
+            </h2>
+            <p className="text-muted-foreground">
+              Everything you need to know about PathFinder AI
+            </p>
           </FadeUp>
 
           <FadeUp delay={0.2} className="max-w-3xl mx-auto">

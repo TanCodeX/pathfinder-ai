@@ -60,7 +60,10 @@ const plans = [
 
 export function PricingSection() {
   return (
-    <section id="pricing" className="relative py-32 md:py-48 bg-muted/30 overflow-hidden">
+    <section
+      id="pricing"
+      className="relative py-32 md:py-48 bg-muted/30 overflow-hidden"
+    >
       <div className="container mx-auto px-4 md:px-6">
         <FadeUp className="max-w-3xl mx-auto text-center mb-20 space-y-4">
           <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-xs font-bold uppercase tracking-widest text-primary">
@@ -94,31 +97,42 @@ export function PricingSection() {
 
                 <div className="space-y-6">
                   <div>
-                    <h3 className="text-lg font-bold text-foreground">{plan.name}</h3>
+                    <h3 className="text-lg font-bold text-foreground">
+                      {plan.name}
+                    </h3>
                     <div className="mt-2 flex items-baseline gap-1">
-                      <span className="text-4xl font-black text-foreground">{plan.price}</span>
+                      <span className="text-4xl font-black text-foreground">
+                        {plan.price}
+                      </span>
                       {plan.period && (
-                        <span className="text-sm text-muted-foreground">{plan.period}</span>
+                        <span className="text-sm text-muted-foreground">
+                          {plan.period}
+                        </span>
                       )}
                     </div>
-                    <p className="text-sm text-muted-foreground mt-2">{plan.desc}</p>
+                    <p className="text-sm text-muted-foreground mt-2">
+                      {plan.desc}
+                    </p>
                   </div>
 
                   <ul className="space-y-3">
                     {plan.features.map((f) => (
                       <li key={f} className="flex items-start gap-3">
                         <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-                        <span className="text-sm text-muted-foreground">{f}</span>
+                        <span className="text-sm text-muted-foreground">
+                          {f}
+                        </span>
                       </li>
                     ))}
                   </ul>
 
                   <Link href={plan.href} className="block">
                     <Button
-                      className={`w-full h-12 rounded-xl font-bold ${plan.popular
-                          ? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20"
-                          : "bg-secondary text-foreground border border-border hover:bg-secondary/80"
-                        }`}
+                      className={`w-full h-12 rounded-xl font-bold ${
+                        plan.popular
+                          ? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20 hover:text-primary-foreground"
+                          : "border border-border bg-card text-white hover:bg-primary hover:text-primary-foreground"
+                      }`}
                     >
                       {plan.cta}
                       <ArrowRight className="h-4 w-4 ml-2" />

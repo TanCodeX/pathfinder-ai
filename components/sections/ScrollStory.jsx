@@ -1,42 +1,61 @@
 "use client";
 
 import { useRef, useState, useEffect } from "react";
-import { motion, useScroll, useTransform, useSpring, AnimatePresence } from "framer-motion";
-import { ArrowRight, Sparkles, Target, MapPin, FileText, Mic, LayoutDashboard } from "lucide-react";
-
+import {
+  motion,
+  useScroll,
+  useTransform,
+  useSpring,
+  AnimatePresence,
+} from "framer-motion";
+import {
+  ArrowRight,
+  Sparkles,
+  Target,
+  MapPin,
+  FileText,
+  Mic,
+  LayoutDashboard,
+} from "lucide-react";
+import { useMotionValueEvent } from "framer-motion";
 const stages = [
   {
     id: "goal",
     headline: "What's your career goal?",
-    subheadline: "Tell us where you want to go, and we'll build a path to get you there.",
+    subheadline:
+      "Tell us where you want to go, and we'll build a path to get you there.",
     icon: Target,
     stageNum: "01",
   },
   {
     id: "roadmap",
     headline: "AI generates your roadmap",
-    subheadline: "A personalized career progression from student to industry leader.",
+    subheadline:
+      "A personalized career progression from student to industry leader.",
     icon: MapPin,
     stageNum: "02",
   },
   {
     id: "resume",
     headline: "Premium ATS-ready resume",
-    subheadline: "Built for the modern job market. Every keyword, every section, optimized.",
+    subheadline:
+      "Built for the modern job market. Every keyword, every section, optimized.",
     icon: FileText,
     stageNum: "03",
   },
   {
     id: "interview",
     headline: "AI interview coach",
-    subheadline: "Practice with purpose. Get real-time feedback. Land the offer.",
+    subheadline:
+      "Practice with purpose. Get real-time feedback. Land the offer.",
     icon: Mic,
     stageNum: "04",
   },
   {
     id: "dashboard",
     headline: "Your complete career hub",
-    subheadline: "Everything you need to accelerate your career, unified in one place.",
+    subheadline:
+      "Everything you need to accelerate your career, unified in one place.",
     icon: LayoutDashboard,
     stageNum: "05",
   },
@@ -48,7 +67,10 @@ function GoalStage({ progress }) {
   const fullText = "Become a Software Engineer at Google";
 
   useEffect(() => {
-    const len = Math.min(Math.floor(progress * fullText.length * 2), fullText.length);
+    const len = Math.min(
+      Math.floor(progress * fullText.length * 2),
+      fullText.length,
+    );
     setText(fullText.slice(0, len));
   }, [progress]);
 
@@ -66,9 +88,13 @@ function GoalStage({ progress }) {
         className="text-center space-y-8 max-w-3xl"
       >
         <div className="inline-flex items-center gap-3 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20">
-          <span className="text-[10px] font-bold uppercase tracking-widest text-primary">Stage 01</span>
+          <span className="text-[10px] font-bold uppercase tracking-widest text-primary">
+            Stage 01
+          </span>
           <span className="h-1 w-1 rounded-full bg-primary/40" />
-          <span className="text-[10px] font-medium text-muted-foreground">Goal Setting</span>
+          <span className="text-[10px] font-medium text-muted-foreground">
+            Goal Setting
+          </span>
         </div>
 
         <div className="space-y-4">
@@ -88,7 +114,11 @@ function GoalStage({ progress }) {
             </label>
             <div className="flex items-center gap-2">
               <span className="text-xl md:text-2xl font-medium text-foreground">
-                {text || <span className="text-muted-foreground/60">Start typing your goal...</span>}
+                {text || (
+                  <span className="text-muted-foreground/60">
+                    Start typing your goal...
+                  </span>
+                )}
                 {showCursor && (
                   <span className="inline-block w-[2px] h-[1.1em] bg-primary ml-0.5 align-middle animate-pulse" />
                 )}
@@ -97,7 +127,10 @@ function GoalStage({ progress }) {
             <div className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
               <div className="flex -space-x-1.5">
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="h-6 w-6 rounded-full border-2 border-background bg-muted flex items-center justify-center text-[8px] font-bold text-muted-foreground">
+                  <div
+                    key={i}
+                    className="h-6 w-6 rounded-full border-2 border-background bg-muted flex items-center justify-center text-[8px] font-bold text-muted-foreground"
+                  >
                     {String.fromCharCode(64 + i)}
                   </div>
                 ))}
@@ -126,20 +159,29 @@ function RoadmapStage({ progress }) {
     y: 50 + i * 60,
   }));
 
-  const pathData = nodePositions.map((p, i) => `${i === 0 ? "M" : "L"}${p.x} ${p.y}`).join(" ");
+  const pathData = nodePositions
+    .map((p, i) => `${i === 0 ? "M" : "L"}${p.x} ${p.y}`)
+    .join(" ");
 
   return (
     <div className="flex flex-col items-center justify-center h-full px-4 md:px-6">
       <motion.div
         initial={{ opacity: 0, y: 40 }}
-        animate={{ opacity: progress > 0.1 ? 1 : 0, y: progress > 0.1 ? 0 : 40 }}
+        animate={{
+          opacity: progress > 0.1 ? 1 : 0,
+          y: progress > 0.1 ? 0 : 40,
+        }}
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         className="text-center space-y-8 max-w-3xl w-full"
       >
         <div className="inline-flex items-center gap-3 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20">
-          <span className="text-[10px] font-bold uppercase tracking-widest text-primary">Stage 02</span>
+          <span className="text-[10px] font-bold uppercase tracking-widest text-primary">
+            Stage 02
+          </span>
           <span className="h-1 w-1 rounded-full bg-primary/40" />
-          <span className="text-[10px] font-medium text-muted-foreground">Career Roadmap</span>
+          <span className="text-[10px] font-medium text-muted-foreground">
+            Career Roadmap
+          </span>
         </div>
 
         <div className="space-y-4">
@@ -152,7 +194,11 @@ function RoadmapStage({ progress }) {
         </div>
 
         <div className="relative mx-auto w-full max-w-md">
-          <svg className="w-full h-72 md:h-80" viewBox="0 0 400 340" fill="none">
+          <svg
+            className="w-full h-72 md:h-80"
+            viewBox="0 0 400 340"
+            fill="none"
+          >
             <defs>
               <linearGradient id="roadmapActive" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="oklch(var(--primary) / 1)" />
@@ -181,7 +227,9 @@ function RoadmapStage({ progress }) {
               strokeLinecap="round"
               strokeDasharray={`${drawProgress * 1200} 1200`}
               strokeDashoffset={1200 - drawProgress * 1200}
-              style={{ transition: "stroke-dasharray 0.15s, stroke-dashoffset 0.15s" }}
+              style={{
+                transition: "stroke-dasharray 0.15s, stroke-dashoffset 0.15s",
+              }}
             />
 
             {milestones.map((m, i) => {
@@ -212,20 +260,39 @@ function RoadmapStage({ progress }) {
                     cx={pos.x}
                     cy={pos.y}
                     r={isActive ? 12 : 8}
-                    fill={isActive ? "oklch(var(--primary) / 1)" : "oklch(var(--card) / 1)"}
-                    stroke={isActive ? "oklch(var(--primary) / 1)" : "oklch(var(--border) / 0.6)"}
+                    fill={
+                      isActive
+                        ? "oklch(var(--primary) / 1)"
+                        : "oklch(var(--card) / 1)"
+                    }
+                    stroke={
+                      isActive
+                        ? "oklch(var(--primary) / 1)"
+                        : "oklch(var(--border) / 0.6)"
+                    }
                     strokeWidth="2"
-                    style={{ transition: "all 0.5s cubic-bezier(0.16, 1, 0.3, 1)" }}
+                    style={{
+                      transition: "all 0.5s cubic-bezier(0.16, 1, 0.3, 1)",
+                    }}
                     filter={isActive ? "url(#nodeGlow)" : "none"}
                   />
                   {isActive && (
-                    <circle cx={pos.x} cy={pos.y} r="4" fill="oklch(var(--card) / 1)" />
+                    <circle
+                      cx={pos.x}
+                      cy={pos.y}
+                      r="4"
+                      fill="oklch(var(--card) / 1)"
+                    />
                   )}
                   <text
                     x={pos.x}
                     y={pos.y + 30}
                     textAnchor="middle"
-                    fill={isActive ? "oklch(var(--foreground) / 1)" : "oklch(var(--muted-foreground) / 0.55)"}
+                    fill={
+                      isActive
+                        ? "oklch(var(--foreground) / 1)"
+                        : "oklch(var(--muted-foreground) / 0.55)"
+                    }
                     fontSize="11"
                     fontWeight="700"
                     style={{ transition: "fill 0.5s" }}
@@ -236,7 +303,11 @@ function RoadmapStage({ progress }) {
                     x={pos.x}
                     y={pos.y + 44}
                     textAnchor="middle"
-                    fill={isActive ? "oklch(var(--muted-foreground) / 0.8)" : "oklch(var(--muted-foreground) / 0.5)"}
+                    fill={
+                      isActive
+                        ? "oklch(var(--muted-foreground) / 0.8)"
+                        : "oklch(var(--muted-foreground) / 0.5)"
+                    }
                     fontSize="9"
                     style={{ transition: "fill 0.5s" }}
                   >
@@ -256,7 +327,14 @@ function ResumeStage({ progress }) {
   const localProgress = Math.min(Math.max((progress - 0.4) / 0.3, 0), 1);
   const displayScore = Math.min(Math.floor(localProgress * 100), 100);
 
-  const skills = ["React", "TypeScript", "Python", "System Design", "AWS", "Leadership"];
+  const skills = [
+    "React",
+    "TypeScript",
+    "Python",
+    "System Design",
+    "AWS",
+    "Leadership",
+  ];
 
   return (
     <div className="flex flex-col items-center justify-center h-full px-4 md:px-6">
@@ -267,9 +345,13 @@ function ResumeStage({ progress }) {
         className="text-center space-y-8 max-w-5xl mx-auto w-full"
       >
         <div className="inline-flex items-center gap-3 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20">
-          <span className="text-[10px] font-bold uppercase tracking-widest text-primary">Stage 03</span>
+          <span className="text-[10px] font-bold uppercase tracking-widest text-primary">
+            Stage 03
+          </span>
           <span className="h-1 w-1 rounded-full bg-primary/40" />
-          <span className="text-[10px] font-medium text-muted-foreground">Resume Generation</span>
+          <span className="text-[10px] font-medium text-muted-foreground">
+            Resume Generation
+          </span>
         </div>
 
         <div className="space-y-4">
@@ -313,7 +395,10 @@ function ResumeStage({ progress }) {
                     <div className="h-2 w-20 rounded-full bg-foreground/15 mb-3" />
                     <div className="flex flex-wrap gap-1.5">
                       {skills.map((s) => (
-                        <div key={s} className="px-2.5 py-1 rounded-md bg-primary/10 border border-primary/20 text-[10px] font-semibold text-primary">
+                        <div
+                          key={s}
+                          className="px-2.5 py-1 rounded-md bg-primary/10 border border-primary/20 text-[10px] font-semibold text-primary"
+                        >
                           {s}
                         </div>
                       ))}
@@ -326,8 +411,12 @@ function ResumeStage({ progress }) {
                   </div>
                   <div className="border-t border-border/30 pt-4">
                     <div className="flex justify-between text-xs mb-2">
-                      <span className="text-muted-foreground font-medium">ATS Score</span>
-                      <span className="font-bold text-primary">{displayScore}%</span>
+                      <span className="text-muted-foreground font-medium">
+                        ATS Score
+                      </span>
+                      <span className="font-bold text-primary">
+                        {displayScore}%
+                      </span>
                     </div>
                     <div className="h-2 rounded-full bg-muted/50 overflow-hidden">
                       <motion.div
@@ -343,9 +432,24 @@ function ResumeStage({ progress }) {
 
           <div className="md:col-span-2 text-left space-y-4">
             {[
-              { label: "ATS Score", value: `${displayScore}%`, color: "from-primary to-chart-3", desc: "Optimized for applicant tracking systems" },
-              { label: "Keyword Match", value: "96%", color: "from-chart-1 to-chart-2", desc: "Aligned with target job descriptions" },
-              { label: "Readability", value: "A+", color: "from-chart-2 to-chart-4", desc: "Clear, scannable, professional" },
+              {
+                label: "ATS Score",
+                value: `${displayScore}%`,
+                color: "from-primary to-chart-3",
+                desc: "Optimized for applicant tracking systems",
+              },
+              {
+                label: "Keyword Match",
+                value: "96%",
+                color: "from-chart-1 to-chart-2",
+                desc: "Aligned with target job descriptions",
+              },
+              {
+                label: "Readability",
+                value: "A+",
+                color: "from-chart-2 to-chart-4",
+                desc: "Clear, scannable, professional",
+              },
             ].map((metric, i) => (
               <motion.div
                 key={metric.label}
@@ -355,12 +459,18 @@ function ResumeStage({ progress }) {
                 className="glass rounded-xl p-4 border border-border/30"
               >
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs font-medium text-foreground">{metric.label}</span>
-                  <span className={`text-lg font-black bg-gradient-to-r ${metric.color} bg-clip-text text-transparent`}>
+                  <span className="text-xs font-medium text-foreground">
+                    {metric.label}
+                  </span>
+                  <span
+                    className={`text-lg font-black bg-gradient-to-r ${metric.color} bg-clip-text text-transparent`}
+                  >
                     {metric.value}
                   </span>
                 </div>
-                <p className="text-[10px] text-muted-foreground">{metric.desc}</p>
+                <p className="text-[10px] text-muted-foreground">
+                  {metric.desc}
+                </p>
               </motion.div>
             ))}
           </div>
@@ -372,13 +482,32 @@ function ResumeStage({ progress }) {
 
 function InterviewStage({ progress }) {
   const showFeedback = progress > 0.55;
-  const score = Math.min(Math.floor(Math.max((progress - 0.5) / 0.3, 0) * 100), 100);
+  const score = Math.min(
+    Math.floor(Math.max((progress - 0.5) / 0.3, 0) * 100),
+    100,
+  );
 
   const metrics = [
-    { label: "Clarity", value: Math.min(88, Math.floor(score * 0.88)), color: "bg-chart-2" },
-    { label: "Structure", value: Math.min(76, Math.floor(score * 0.76)), color: "bg-chart-1" },
-    { label: "Impact", value: Math.min(82, Math.floor(score * 0.82)), color: "bg-chart-3" },
-    { label: "Confidence", value: Math.min(79, Math.floor(score * 0.79)), color: "bg-chart-5" },
+    {
+      label: "Clarity",
+      value: Math.min(88, Math.floor(score * 0.88)),
+      color: "bg-chart-2",
+    },
+    {
+      label: "Structure",
+      value: Math.min(76, Math.floor(score * 0.76)),
+      color: "bg-chart-1",
+    },
+    {
+      label: "Impact",
+      value: Math.min(82, Math.floor(score * 0.82)),
+      color: "bg-chart-3",
+    },
+    {
+      label: "Confidence",
+      value: Math.min(79, Math.floor(score * 0.79)),
+      color: "bg-chart-5",
+    },
   ];
 
   return (
@@ -390,9 +519,13 @@ function InterviewStage({ progress }) {
         className="text-center space-y-8 max-w-5xl mx-auto w-full"
       >
         <div className="inline-flex items-center gap-3 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20">
-          <span className="text-[10px] font-bold uppercase tracking-widest text-primary">Stage 04</span>
+          <span className="text-[10px] font-bold uppercase tracking-widest text-primary">
+            Stage 04
+          </span>
           <span className="h-1 w-1 rounded-full bg-primary/40" />
-          <span className="text-[10px] font-medium text-muted-foreground">Interview Coach</span>
+          <span className="text-[10px] font-medium text-muted-foreground">
+            Interview Coach
+          </span>
         </div>
 
         <div className="space-y-4">
@@ -409,15 +542,22 @@ function InterviewStage({ progress }) {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="h-2 w-2 rounded-full bg-chart-2 animate-pulse" />
-                <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Live Session</span>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                  Live Session
+                </span>
               </div>
               <div className="flex gap-1">
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="h-1.5 w-1.5 rounded-full bg-chart-2" />
+                  <div
+                    key={i}
+                    className="h-1.5 w-1.5 rounded-full bg-chart-2"
+                  />
                 ))}
               </div>
             </div>
-            <p className="text-xs font-bold uppercase tracking-widest text-primary">AI Interviewer</p>
+            <p className="text-xs font-bold uppercase tracking-widest text-primary">
+              AI Interviewer
+            </p>
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -438,15 +578,24 @@ function InterviewStage({ progress }) {
                     key={i}
                     className="w-1.5 bg-primary/60 rounded-full"
                     animate={{ height: `${h * 8}px` }}
-                    transition={{ duration: 0.3, delay: i * 0.05, repeat: Infinity, repeatDelay: 0.3 }}
+                    transition={{
+                      duration: 0.3,
+                      delay: i * 0.05,
+                      repeat: Infinity,
+                      repeatDelay: 0.3,
+                    }}
                   />
                 ))}
               </div>
-              <span className="text-xs text-muted-foreground animate-pulse">Recording response...</span>
+              <span className="text-xs text-muted-foreground animate-pulse">
+                Recording response...
+              </span>
             </motion.div>
             <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-xl">
               <div className="flex-1 h-10 rounded-lg bg-background border border-border/50 px-4 flex items-center">
-                <span className="text-xs text-muted-foreground">Type your response...</span>
+                <span className="text-xs text-muted-foreground">
+                  Type your response...
+                </span>
               </div>
               <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center">
                 <ArrowRight className="h-4 w-4 text-primary-foreground" />
@@ -468,8 +617,12 @@ function InterviewStage({ progress }) {
                     Live Feedback
                   </p>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-foreground">Interview Score</span>
-                    <span className="text-2xl font-black text-primary">{score}/100</span>
+                    <span className="text-sm font-medium text-foreground">
+                      Interview Score
+                    </span>
+                    <span className="text-2xl font-black text-primary">
+                      {score}/100
+                    </span>
                   </div>
                   <div className="h-2 rounded-full bg-muted/50 overflow-hidden">
                     <motion.div
@@ -483,7 +636,9 @@ function InterviewStage({ progress }) {
                     <div key={m.label} className="space-y-1">
                       <div className="flex justify-between text-xs">
                         <span className="text-muted-foreground">{m.label}</span>
-                        <span className="font-bold text-foreground">{Math.min(m.value, score)}%</span>
+                        <span className="font-bold text-foreground">
+                          {Math.min(m.value, score)}%
+                        </span>
                       </div>
                       <div className="h-1 rounded-full bg-muted/50 overflow-hidden">
                         <motion.div
@@ -496,7 +651,8 @@ function InterviewStage({ progress }) {
                     </div>
                   ))}
                   <p className="text-xs text-muted-foreground leading-relaxed">
-                    Great start! Focus on providing specific examples with measurable outcomes to boost your score.
+                    Great start! Focus on providing specific examples with
+                    measurable outcomes to boost your score.
                   </p>
                 </motion.div>
               )}
@@ -518,9 +674,13 @@ function DashboardStage({ progress }) {
         className="text-center space-y-8 max-w-4xl mx-auto w-full"
       >
         <div className="inline-flex items-center gap-3 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20">
-          <span className="text-[10px] font-bold uppercase tracking-widest text-primary">Stage 05</span>
+          <span className="text-[10px] font-bold uppercase tracking-widest text-primary">
+            Stage 05
+          </span>
           <span className="h-1 w-1 rounded-full bg-primary/40" />
-          <span className="text-[10px] font-medium text-muted-foreground">Career Dashboard</span>
+          <span className="text-[10px] font-medium text-muted-foreground">
+            Career Dashboard
+          </span>
         </div>
 
         <div className="space-y-4">
@@ -538,10 +698,30 @@ function DashboardStage({ progress }) {
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto">
           {[
-            { label: "Career Roadmap", value: "5 Stages", color: "from-chart-1 to-chart-1/50", icon: "🗺️" },
-            { label: "Resume Score", value: "ATS 94%", color: "from-chart-2 to-chart-2/50", icon: "📄" },
-            { label: "Interview Prep", value: "Score 85", color: "from-chart-3 to-chart-3/50", icon: "🎯" },
-            { label: "Analytics", value: "12 Insights", color: "from-chart-5 to-chart-5/50", icon: "📊" },
+            {
+              label: "Career Roadmap",
+              value: "5 Stages",
+              color: "from-chart-1 to-chart-1/50",
+              icon: "🗺️",
+            },
+            {
+              label: "Resume Score",
+              value: "ATS 94%",
+              color: "from-chart-2 to-chart-2/50",
+              icon: "📄",
+            },
+            {
+              label: "Interview Prep",
+              value: "Score 85",
+              color: "from-chart-3 to-chart-3/50",
+              icon: "🎯",
+            },
+            {
+              label: "Analytics",
+              value: "12 Insights",
+              color: "from-chart-5 to-chart-5/50",
+              icon: "📊",
+            },
           ].map((item, i) => (
             <motion.div
               key={item.label}
@@ -551,10 +731,14 @@ function DashboardStage({ progress }) {
               whileHover={{ y: -4, scale: 1.02 }}
               className="glass rounded-2xl p-5 border border-border/40 text-center space-y-3 hover:border-primary/30 transition-all duration-300"
             >
-              <div className={`h-12 w-12 mx-auto rounded-xl bg-gradient-to-br ${item.color} flex items-center justify-center shadow-lg`}>
+              <div
+                className={`h-12 w-12 mx-auto rounded-xl bg-gradient-to-br ${item.color} flex items-center justify-center shadow-lg`}
+              >
                 <span className="text-lg">{item.icon}</span>
               </div>
-              <p className="text-xs text-muted-foreground font-medium">{item.label}</p>
+              <p className="text-xs text-muted-foreground font-medium">
+                {item.label}
+              </p>
               <p className="text-xl font-black text-foreground">{item.value}</p>
             </motion.div>
           ))}
@@ -566,52 +750,140 @@ function DashboardStage({ progress }) {
 
 export function ScrollStory() {
   const containerRef = useRef(null);
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start start", "end end"],
-  });
+  const stickyRef = useRef(null);
 
-  const progress = useSpring(scrollYProgress, {
-    stiffness: 100,
-    damping: 30,
-    mass: 0.5,
-  });
+  const [activeStage, setActiveStage] = useState(0);
 
-  const stageIndex = useTransform(scrollYProgress, [0, 0.2, 0.4, 0.6, 0.8, 1], [0, 0, 1, 2, 3, 4]);
-  const currentStage = useTransform(stageIndex, (v) => Math.min(Math.floor(v), 4));
+  const animationLock = useRef(false);
+  const [isScrollStoryActive, setIsScrollStoryActive] = useState(false);
+
+
+  useEffect(() => {
+    if (stickyRef.current) {
+      const el = stickyRef.current;
+      const observer = new IntersectionObserver(
+        (entries) => {
+          const entry = entries[0];
+          setIsScrollStoryActive(entry.isIntersecting);
+        },
+        { root: null, threshold: 0.65 }
+      );
+      observer.observe(el);
+      return () => observer.disconnect();
+    }
+
+    return undefined;
+  }, []);
+
+  useEffect(() => {
+    const handleWheel = (e) => {
+
+      const section = containerRef.current;
+
+      if (!section) return;
+
+      const rect = section.getBoundingClientRect();
+
+      // Only allow wheel-stage scrolling when the ScrollStory section is fully in view
+      // (prevents triggering while user is already interacting with next sections)
+      const isInsideSection =
+        rect.top <= 0 && rect.bottom >= window.innerHeight * 0.95;
+
+      if (!isInsideSection) return;
+
+
+      if (animationLock.current) {
+        e.preventDefault();
+        return;
+      }
+
+      if (e.deltaY > 0) {
+        if (activeStage < 4) {
+          e.preventDefault();
+
+          animationLock.current = true;
+
+          setActiveStage((prev) => prev + 1);
+
+          setTimeout(() => {
+            animationLock.current = false;
+          }, 600);
+        }
+      } else {
+        if (activeStage > 0) {
+          e.preventDefault();
+
+          animationLock.current = true;
+
+          setActiveStage((prev) => prev - 1);
+
+          setTimeout(() => {
+            animationLock.current = false;
+          }, 600);
+        }
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      animationLock.current = false;
+    };
+
+    window.addEventListener("wheel", handleWheel, {
+      passive: false,
+    });
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener("wheel", handleWheel);
+
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [activeStage]);
 
   return (
-    <section id="scroll-story" className="relative">
-      <div ref={containerRef} className="relative h-[400vh]">
-        <div className="sticky top-0 h-screen flex items-center justify-center overflow-hidden">
+    <section id="scroll-story" className="relative h-screen">
+      <div ref={containerRef} className="relative h-[500vh]">
+        <div
+          ref={stickyRef}
+          className="sticky top-0 h-screen flex items-center justify-center overflow-hidden"
+        >
           <div className="absolute inset-0 bg-gradient-to-b from-background via-background/95 to-background pointer-events-none z-10" />
 
           <AnimatePresence mode="wait">
             <motion.div
-              key={currentStage.get()}
+              key={activeStage}
               initial={{ opacity: 0, scale: 0.97 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.97 }}
-              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+              transition={{
+                duration: 0.45,
+                ease: [0.22, 1, 0.36, 1],
+              }}
+              onAnimationComplete={() => {
+                animationLock.current = false;
+              }}
               className="relative z-20 w-full"
             >
-              {currentStage.get() === 0 && <GoalStage progress={progress.get()} />}
-              {currentStage.get() === 1 && <RoadmapStage progress={progress.get()} />}
-              {currentStage.get() === 2 && <ResumeStage progress={progress.get()} />}
-              {currentStage.get() === 3 && <InterviewStage progress={progress.get()} />}
-              {currentStage.get() === 4 && <DashboardStage progress={progress.get()} />}
+              {activeStage === 0 && <GoalStage progress={0.5} />}
+              {activeStage === 1 && <RoadmapStage progress={0.4} />}
+              {activeStage === 2 && <ResumeStage progress={0.65} />}
+              {activeStage === 3 && <InterviewStage progress={0.85} />}
+              {activeStage === 4 && <DashboardStage progress={1} />}
             </motion.div>
           </AnimatePresence>
 
           <div className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-20 flex flex-col gap-3">
             {stages.map((s, i) => {
-              const isActive = currentStage.get() >= i;
+              const isActive = activeStage >= i;
               const Icon = s.icon;
               return (
                 <div key={s.id} className="flex items-center gap-3 group">
                   <div
                     className={`h-2.5 w-2.5 rounded-full transition-all duration-500 ${
-                      isActive ? "bg-primary scale-150 shadow-lg shadow-primary/30" : "bg-border"
+                      isActive
+                        ? "bg-primary scale-150 shadow-lg shadow-primary/30"
+                        : "bg-border"
                     }`}
                   />
                   <div
@@ -619,7 +891,9 @@ export function ScrollStory() {
                       isActive ? "text-foreground" : "text-muted-foreground/50"
                     }`}
                   >
-                    <Icon className={`h-3 w-3 ${isActive ? "text-primary" : ""}`} />
+                    <Icon
+                      className={`h-3 w-3 ${isActive ? "text-primary" : ""}`}
+                    />
                     {s.stageNum}
                   </div>
                 </div>
@@ -630,7 +904,7 @@ export function ScrollStory() {
           <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20">
             <motion.div
               className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50"
-              style={{ opacity: useTransform(scrollYProgress, [0, 0.05, 0.95, 1], [1, 0, 0, 1]) }}
+              style={{ opacity: activeStage === 0 ? 1 : 0 }}
             >
               <span>Scroll to explore</span>
               <motion.div

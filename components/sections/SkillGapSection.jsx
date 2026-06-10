@@ -57,8 +57,8 @@ export function SkillGapSection() {
           <div className="flex items-center justify-center">
             <svg viewBox="0 0 160 160" className="w-full max-w-xs h-auto">
               {/* Target ring */}
-              <circle cx={center} cy={center} r={radius} fill="none" stroke="oklch(var(--border) / 0.2)" strokeWidth="1" strokeDasharray="3 3" />
-              <circle cx={center} cy={center} r={radius * 0.75} fill="none" stroke="oklch(var(--border) / 0.15)" strokeWidth="1" strokeDasharray="3 3" />
+              <circle cx={center} cy={center} r={radius} fill="none" stroke="#334155" strokeWidth="1" strokeDasharray="3 3" />
+              <circle cx={center} cy={center} r={radius * 0.75} fill="none" stroke="#1e293b" strokeWidth="1" strokeDasharray="3 3" />
               <circle cx={center} cy={center} r={radius * 0.5} fill="none" stroke="oklch(var(--border) / 0.1)" strokeWidth="1" strokeDasharray="3 3" />
 
               {/* Axis lines */}
@@ -80,8 +80,8 @@ export function SkillGapSection() {
               {/* Target area */}
               <motion.path
                 d={targetPath}
-                fill="oklch(var(--primary) / 0.08)"
-                stroke="oklch(var(--primary) / 0.3)"
+                fill="#3b82f610"
+                stroke="#3b82f680"
                 strokeWidth="1.5"
                 strokeDasharray="4 3"
                 initial={{ opacity: 0 }}
@@ -92,8 +92,8 @@ export function SkillGapSection() {
               {/* Current area */}
               <motion.path
                 d={currentPath}
-                fill="oklch(var(--primary) / 0.15)"
-                stroke="oklch(var(--primary) / 0.8)"
+                fill="#3b82f620"
+                stroke="#3b82f6"
                 strokeWidth="2"
                 initial={{ pathLength: 0 }}
                 whileInView={{ pathLength: 1 }}
@@ -111,7 +111,7 @@ export function SkillGapSection() {
                     y={p.y}
                     textAnchor="middle"
                     dominantBaseline="middle"
-                    fill="oklch(var(--muted-foreground) / 0.8)"
+                    fill="#94a3b8"
                     fontSize="6"
                     fontWeight="700"
                   >
