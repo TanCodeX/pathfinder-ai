@@ -251,7 +251,7 @@ export default function AppSidebar() {
               className="flex flex-col flex-1 min-w-0"
             >
               <span className="text-xs font-black text-foreground truncate leading-tight">{user?.fullName || user?.firstName || user?.primaryEmailAddress?.emailAddress || 'User Account'}</span>
-              <span className="text-[10px] font-bold text-muted-foreground truncate uppercase tracking-widest mt-0.5">Free Member</span>
+              <span className="text-[10px] font-bold text-muted-foreground truncate uppercase tracking-widest mt-0.5">{user?.publicMetadata?.plan ? `${user.publicMetadata.plan} Member`.toUpperCase() : 'Free Member'}</span>
             </motion.div>
           )}
         </div>
