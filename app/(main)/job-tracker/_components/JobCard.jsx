@@ -63,8 +63,10 @@ export default function JobCard({ job, onDelete }) {
     return `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${formatDate(start)}/${formatDate(end)}&details=${encodeURIComponent(details)}`;
   };
 
-  const daysSinceUpdate = Math.floor((new Date() - new Date(job.updatedAt)) / (1000 * 60 * 60 * 24));
-  const needsFollowUp = job.status === "Applied" && daysSinceUpdate >= 7;
+  const updateDate = new Date(job.updatedAt);
+  const isValidDate = !isNaN(updateDate.getTime());
+  const daysSinceUpdate = isValidDate ? Math.floor((new Date() - updateDate) / (1000 * 60 * 60 * 24)) : 0;
+  const needsFollowUp = job.status === "Applied" && isValidDate && daysSinceUpdate >= 7;
 
   return (
     <div className="group relative bg-background border border-border p-4 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300">
@@ -197,14 +199,14 @@ export default function JobCard({ job, onDelete }) {
         {/* Tailored Generation Buttons */}
         <div className="grid grid-cols-2 gap-2 mb-2">
           <Link
-            href={`/resume-builder?jobTitle=${encodeURIComponent(job.jobTitle)}&company=${encodeURIComponent(job.companyName)}`}
+            href={`/resume-builder?jobTitle=${encodeURIComponent(job.jobTitle || 'unknown')}&company=${encodeURIComponent(job.companyName || 'unknown')}`}
             className="flex items-center justify-center gap-1.5 py-1.5 px-2 bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 border border-blue-500/20 rounded-lg text-[10px] font-bold transition-colors"
           >
             <Wand2 className="h-3 w-3" />
             Tailor Resume
           </Link>
           <Link
-            href={`/ai-cover-letter?jobTitle=${encodeURIComponent(job.jobTitle)}&company=${encodeURIComponent(job.companyName)}`}
+            href={`/ai-cover-letter?jobTitle=${encodeURIComponent(job.jobTitle || 'unknown')}&company=${encodeURIComponent(job.companyName || 'unknown')}`}
             className="flex items-center justify-center gap-1.5 py-1.5 px-2 bg-purple-500/10 hover:bg-purple-500/20 text-purple-600 border border-purple-500/20 rounded-lg text-[10px] font-bold transition-colors"
           >
             <Wand2 className="h-3 w-3" />
@@ -259,7 +261,7 @@ export default function JobCard({ job, onDelete }) {
           </div>
           
           <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
-            {formatDistanceToNow(new Date(job.updatedAt), { addSuffix: true })}
+            {isValidDate ? formatDistanceToNow(updateDate, { addSuffix: true }) : "—"}
           </span>
         </div>
       </div>

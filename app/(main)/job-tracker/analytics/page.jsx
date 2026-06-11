@@ -18,11 +18,16 @@ export default function AnalyticsDashboard() {
 
   useEffect(() => {
     async function loadData() {
-      const res = await getJobAnalytics();
-      if (res.success) {
-        setData(res.data);
+      try {
+        const res = await getJobAnalytics();
+        if (res.success) {
+          setData(res.data);
+        }
+      } catch (error) {
+        console.error("Failed to load analytics:", error);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     }
     loadData();
   }, []);
@@ -57,7 +62,7 @@ export default function AnalyticsDashboard() {
   return (
     <div className="max-w-7xl mx-auto px-4 md:px-8 py-10 space-y-8">
       <div className="flex items-center gap-4">
-        <Link href="/job-tracker" className="p-2 bg-muted hover:bg-muted/80 rounded-xl transition-colors">
+        <Link href="/job-tracker" aria-label="Back to job tracker" className="p-2 bg-muted hover:bg-muted/80 rounded-xl transition-colors">
           <ChevronLeft className="h-5 w-5" />
         </Link>
         <div>
@@ -100,7 +105,7 @@ export default function AnalyticsDashboard() {
             <Building2 className="h-5 w-5" />
           </div>
           <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Companies</p>
-          <h3 className="text-4xl font-black">{data.companyData.length}</h3>
+          <h3 className="text-4xl font-black">{data.uniqueCompanyCount ?? data.companyData.length}</h3>
         </div>
       </div>
 

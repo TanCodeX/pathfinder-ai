@@ -16,4 +16,11 @@ async function main() {
   console.log('Dummy user:', user.clerkUserId);
 }
 
-main().catch(console.error).finally(() => prisma.$disconnect());
+main()
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });

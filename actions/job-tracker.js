@@ -191,16 +191,20 @@ export async function getJobAnalytics() {
     });
 
     const total = jobs.length;
-    const statusCounts = jobs.reduce((acc, job) => {
-      acc[job.status] = (acc[job.status] || 0) + 1;
-      return acc;
-    }, {});
+    const statusCounts = {};
 
     // Role grouping
     const roleStats = {};
     const companyStats = {};
 
     jobs.forEach(job => {
+      let normalizedStatus = job.status;
+      if (normalizedStatus === "Interviewing") normalizedStatus = "Interview";
+      if (normalizedStatus === "Offer Received") normalizedStatus = "Offer";
+      if (normalizedStatus === "Wishlist") normalizedStatus = "Saved";
+
+      statusCounts[normalizedStatus] = (statusCounts[normalizedStatus] || 0) + 1;
+
       let roleGroup = "Other";
       const titleLower = job.jobTitle.toLowerCase();
       if (titleLower.includes("engineer") || titleLower.includes("developer")) roleGroup = "Engineering";
@@ -210,7 +214,7 @@ export async function getJobAnalytics() {
 
       if (!roleStats[roleGroup]) roleStats[roleGroup] = { total: 0, responses: 0 };
       roleStats[roleGroup].total += 1;
-      const isResponse = ["Online Assessment (OA)", "Interview", "Offer", "Offer Received", "Interviewing"].includes(job.status);
+      const isResponse = ["Online Assessment (OA)", "Interview", "Offer"].includes(normalizedStatus);
       if (isResponse) {
         roleStats[roleGroup].responses += 1;
       }
@@ -229,6 +233,8 @@ export async function getJobAnalytics() {
       responseRate: roleStats[name].total > 0 ? (roleStats[name].responses / roleStats[name].total) * 100 : 0
     }));
 
+    const uniqueCompanyCount = Object.keys(companyStats).length;
+
     const companyData = Object.keys(companyStats).map(name => ({
       name,
       total: companyStats[name].total,
@@ -241,7 +247,8 @@ export async function getJobAnalytics() {
         total,
         statusCounts,
         roleData,
-        companyData
+        companyData,
+        uniqueCompanyCount
       }
     };
   } catch (error) {

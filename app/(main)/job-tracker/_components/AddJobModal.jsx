@@ -11,6 +11,7 @@ import { parseJobUrl } from "@/actions/job-scraper";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { JOB_STATUSES } from "@/lib/schemas/forms";
 
 export default function AddJobModal({ isOpen, onClose, onAdd }) {
   const [loading, setLoading] = useState(false);
@@ -72,7 +73,10 @@ export default function AddJobModal({ isOpen, onClose, onAdd }) {
         
         let newNotes = formData.notes;
         if (jobDescription) {
-          newNotes = formData.notes ? formData.notes + "\n\n" + jobDescription : jobDescription;
+          const checkDesc = jobDescription.slice(0, 100);
+          if (!formData.notes || !formData.notes.includes(checkDesc)) {
+            newNotes = formData.notes ? formData.notes + "\n\n" + jobDescription : jobDescription;
+          }
         }
 
         setFormData(p => ({
@@ -85,20 +89,31 @@ export default function AddJobModal({ isOpen, onClose, onAdd }) {
         }));
 
         if (baseResume && jobDescription) {
-          toast.loading("Analyzing ATS Match...", { id: "ats" });
-          const atsRes = await analyzeATS({
-            resumeContent: baseResume.content,
-            jobDescription,
-            jobTitle: jobTitle || "Target Role",
-            companyName: companyName || "Target Company",
-          });
-          if (atsRes.success) {
-            toast.success("Match Score calculated!", { id: "ats" });
-            setAtsAnalyses(prev => [atsRes.data, ...prev]);
-            setFormData(p => ({ ...p, atsAnalysisId: atsRes.data.id }));
-            setMatchScore(atsRes.data.atsScore);
+          const existingAnalysis = atsAnalyses.find(a => 
+            a.jobDescription === jobDescription || 
+            (a.companyName === companyName && a.jobTitle === jobTitle)
+          );
+
+          if (existingAnalysis) {
+            setFormData(p => ({ ...p, atsAnalysisId: existingAnalysis.id }));
+            setMatchScore(existingAnalysis.atsScore);
+            toast.success("Using existing ATS Match Score!", { id: "ats" });
           } else {
-            toast.error("ATS analysis failed.", { id: "ats" });
+            toast.loading("Analyzing ATS Match...", { id: "ats" });
+            const atsRes = await analyzeATS({
+              resumeContent: baseResume.content,
+              jobDescription,
+              jobTitle: jobTitle || "Target Role",
+              companyName: companyName || "Target Company",
+            });
+            if (atsRes.success) {
+              toast.success("Match Score calculated!", { id: "ats" });
+              setAtsAnalyses(prev => [atsRes.data, ...prev]);
+              setFormData(p => ({ ...p, atsAnalysisId: atsRes.data.id }));
+              setMatchScore(atsRes.data.atsScore);
+            } else {
+              toast.error("ATS analysis failed.", { id: "ats" });
+            }
           }
         }
       } else {
@@ -254,7 +269,7 @@ export default function AddJobModal({ isOpen, onClose, onAdd }) {
                   Status
                 </label>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                  {["Saved", "Applied", "Online Assessment (OA)", "Interview", "Rejected", "Offer"].map(s => (
+                  {JOB_STATUSES.map(s => (
                     <button
                       key={s}
                       type="button"

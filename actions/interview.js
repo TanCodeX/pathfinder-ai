@@ -720,13 +720,12 @@ export async function getAssessment(id) {
     });
     if (!user) return null;
 
-    const assessment = await db.assessment.findFirst({
+    return db.assessment.findFirst({
       where: {
         id,
         userId: user.id,
       },
     });
-    return assessment;
   } catch (error) {
     console.error("Error fetching assessment:", error);
     return null;
