@@ -88,6 +88,8 @@ model User {
   imposterSyndromes    ImposterSyndrome[]
   managerReadmes       ManagerReadme[]
   skillGapAnalyses     SkillGapAnalysis[]
+  founderReadinesses   FounderReadiness[]
+  executivePresences   ExecutivePresence[]
 
   exportRecords ExportRecord[]
   auditLogs     AuditLog[]
@@ -728,4 +730,29 @@ model SkillGapAnalysis {
   analysis         Json
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
+}
+
+model FounderReadiness {
+  id               String   @id @default(cuid())
+  userId           String
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  businessIdea     String   @db.Text
+  riskTolerance    String
+  skills           String   @db.Text
+  readinessData    Json
+  createdAt        DateTime @default(now())
+
+  @@index([userId])
+}
+
+model ExecutivePresence {
+  id               String   @id @default(cuid())
+  userId           String
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  targetAudience   String
+  currentChallenge String   @db.Text
+  presenceData     Json
+  createdAt        DateTime @default(now())
+
+  @@index([userId])
 }
