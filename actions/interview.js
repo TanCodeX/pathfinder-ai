@@ -773,6 +773,12 @@ export async function evaluateVideoAnswer(question, transcribedAnswer, metrics) 
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 
+  const assessment = await db.assessment.findFirst({
+    where: {
+      id,
+      userId: user.id,
+    },
+  });
 
 const prompt = buildSecurePrompt({
   context: "You are an expert interview coach evaluating a video interview response.",
