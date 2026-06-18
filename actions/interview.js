@@ -8,7 +8,7 @@ import { buildSecurePrompt } from "@/lib/prompt-safety";
 import { buildUserProfileContext } from "@/lib/ai-context";
 import { validateInput, validateOutput } from "@/lib/validate";
 import { quizCategorySchema, quizResultSaveSchema } from "@/lib/schemas/forms";
-import { interviewQuestionsOutputSchema } from "@/lib/schemas/outputs";
+import { interviewQuestionsOutputSchema, voiceFeedbackOutputSchema, videoFeedbackOutputSchema } from "@/lib/schemas";
 import { checkRateLimit, formatResetTime } from "@/lib/rate-limit-actions";
 
 // Fallback MCQ questions in case Gemini generation fails, categorized by industry
@@ -774,9 +774,12 @@ export async function evaluateVoiceAnswer(question, transcribedAnswer) {
 });
   try {
     const aiResult = await generateGeminiContent(prompt);
-    let rawText = aiResult.response.text();
-    const parsed = JSON.parse(rawText);
-    return { success: true, data: parsed };
+    const validation = validateOutput(voiceFeedbackOutputSchema, aiResult.response.text());
+    if (!validation.success) {
+      console.error("Voice evaluation output validation failed:", validation.errors);
+      return { success: false, error: "AI returned an unexpected format." };
+    }
+    return { success: true, data: validation.data };
   } catch (error) {
     console.error("Voice evaluation error:", error);
     return { success: false, error: "Failed to evaluate answer." };
@@ -790,22 +793,15 @@ export async function evaluateVideoAnswer(question, transcribedAnswer, metrics) 
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 
-  const assessment = await db.assessment.findFirst({
-    where: {
-      id,
-      userId: user.id,
-    },
-  });
-
-const prompt = buildSecurePrompt({
-  context: "You are an expert interview coach evaluating a video interview response.",
-  task: "Evaluate the transcribed answer and the provided facial metrics (e.g., face detected percentage).",
-  untrustedData: [
-    { label: "question",           value: question,                    maxLength: 1000 },
-    { label: "transcribedAnswer",  value: transcribedAnswer,           maxLength: 3000 },
-    { label: "metrics",            value: JSON.stringify(metrics),     maxLength: 500  },
-  ],
-  outputRules: `Provide feedback in JSON format ONLY. Do not output any markdown code fences or extra text:
+  const prompt = buildSecurePrompt({
+    context: "You are an expert interview coach evaluating a video interview response.",
+    task: "Evaluate the transcribed answer and the provided facial metrics (e.g., face detected percentage).",
+    untrustedData: [
+      { label: "question",           value: question,                    maxLength: 1000 },
+      { label: "transcribedAnswer",  value: transcribedAnswer,           maxLength: 3000 },
+      { label: "metrics",            value: JSON.stringify(metrics),     maxLength: 500  },
+    ],
+    outputRules: `Provide feedback in JSON format ONLY. Do not output any markdown code fences or extra text:
 {
   "score": 85,
   "fillerWordsCount": 3,
@@ -813,13 +809,16 @@ const prompt = buildSecurePrompt({
   "bodyLanguageFeedback": "You maintained great eye contact and presence.",
   "verbalFeedback": "Your answer was very structured, but you used 'um' a few times."
 }`,
-}); 
+  }); 
 
   try {
     const aiResult = await generateGeminiContent(prompt);
-    let rawText = aiResult.response.text();
-    const parsed = JSON.parse(rawText);
-    return { success: true, data: parsed };
+    const validation = validateOutput(videoFeedbackOutputSchema, aiResult.response.text());
+    if (!validation.success) {
+      console.error("Video evaluation output validation failed:", validation.errors);
+      return { success: false, error: "AI returned an unexpected format." };
+    }
+    return { success: true, data: validation.data };
   } catch (error) {
     console.error("Video evaluation error:", error);
     return { success: false, error: "Failed to evaluate video answer." };

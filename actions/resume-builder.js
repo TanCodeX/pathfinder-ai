@@ -5,7 +5,8 @@ import { getUserByClerkId } from "@/lib/user";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { buildSecurePrompt } from "@/lib/prompt-safety";
-import { parseAIJson } from "@/lib/validate";
+import { validateOutput } from "@/lib/validate";
+import { resumeOutputSchema } from "@/lib/schemas/resume";
 import { generateGeminiContent } from "@/lib/gemini";
 import { buildUserProfileContext } from "@/lib/ai-context";
 import { checkRateLimit, formatResetTime } from "@/lib/rate-limit-actions";
@@ -30,7 +31,7 @@ export async function generateResumeContent(jobDescription) {
   }
 
   const user = await getUserByClerkId(userId);
-  return createErrorResponse("User not found");
+  if (!user) return createErrorResponse("User not found");
 
   const prompt = buildSecurePrompt({
     context: buildUserProfileContext(user),
@@ -83,7 +84,12 @@ export async function generateResumeContent(jobDescription) {
 
   try {
     const aiResult = await generateGeminiContent(prompt);
-    const parsedData = parseAIJson(aiResult.response.text());
+    const validation = validateOutput(resumeOutputSchema, aiResult.response.text());
+    if (!validation.success) {
+      console.error("Resume output validation failed:", validation.errors);
+      return createErrorResponse("AI returned an unexpected format. Please try again.");
+    }
+    const parsedData = validation.data;
 
     const record = await db.resumeGeneration.create({
       data: {
