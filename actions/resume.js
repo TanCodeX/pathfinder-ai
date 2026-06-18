@@ -1,5 +1,5 @@
 "use server";
-
+import { USER_NOT_FOUND_MESSAGE } from "@/lib/errors";
 import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
@@ -20,7 +20,7 @@ export async function saveResume(rawContent) {
   if (!validation.success) return { success: false, errors: validation.errors };
 
   const user = await db.user.findUnique({ where: { clerkUserId: userId } });
-  if (!user) return { success: false, errors: { _form: ["Active database profile not found."] } };
+  if (!user) return { success: false, errors: { _form: [USER_NOT_FOUND_MESSAGE] } };
 
   try {
     const resume = await db.resume.upsert({

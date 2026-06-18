@@ -1,6 +1,7 @@
 "use server";
-
+import { UNAUTHORIZED_RESPONSE } from "@/lib/auth-errors";
 import { db } from "@/lib/prisma";
+import { getUserByClerkId } from "@/lib/user";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { buildSecurePrompt } from "@/lib/prompt-safety";
@@ -8,10 +9,11 @@ import { parseAIJson } from "@/lib/validate";
 import { generateGeminiContent } from "@/lib/gemini";
 import { buildUserProfileContext } from "@/lib/ai-context";
 import { checkRateLimit, formatResetTime } from "@/lib/rate-limit-actions";
+import { createErrorResponse } from "@/lib/action-errors";
 
 export async function generateResumeContent(jobDescription) {
   const { userId } = await auth();
-  if (!userId) return { success: false, errors: { _form: ["Unauthorized"] } };
+  if (!userId) return UNAUTHORIZED_RESPONSE;
 
   const limit = await checkRateLimit(userId, "resumeBuilder");
   if (!limit.allowed) {
@@ -27,10 +29,8 @@ export async function generateResumeContent(jobDescription) {
     return { success: false, errors: { _form: ["Please provide a valid job description (at least 50 characters)."] } };
   }
 
-  const user = await db.user.findUnique({
-    where: { clerkUserId: userId },
-  });
-  if (!user) return { success: false, errors: { _form: ["User not found"] } };
+  const user = await getUserByClerkId(userId);
+  return createErrorResponse("User not found");
 
   const prompt = buildSecurePrompt({
     context: buildUserProfileContext(user),
@@ -97,7 +97,9 @@ export async function generateResumeContent(jobDescription) {
     return { success: true, data: record };
   } catch (error) {
     console.error("Resume Generation Error:", error);
-    return { success: false, errors: { _form: [error.message || "Failed to generate resume"] } };
+    return createErrorResponse(
+  error.message || "Failed to generate resume"
+);
   }
 }
 
@@ -105,9 +107,7 @@ export async function getResumeHistory() {
   const { userId } = await auth();
   if (!userId) return { success: false, data: [] };
 
-  const user = await db.user.findUnique({
-    where: { clerkUserId: userId },
-  });
+  const user = await getUserByClerkId(userId);
   if (!user) return { success: false, data: [] };
 
   const records = await db.resumeGeneration.findMany({

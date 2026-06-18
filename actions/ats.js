@@ -11,6 +11,7 @@ import { validateInput, parseAIJson } from "@/lib/validate";
 import { atsAnalysisSchema } from "@/lib/schemas/forms";
 import { normalizeAtsSuggestions } from "@/lib/ats";
 import { checkRateLimit, formatResetTime } from "@/lib/rate-limit-actions";
+import { USER_NOT_FOUND_MESSAGE } from "@/lib/errors";
 
 /**
  * Runs an ATS analysis using Gemini AI and persists the result safely.
@@ -48,7 +49,7 @@ export async function analyzeATS(rawParams) {
       where: { clerkUserId: userId },
     });
     if (!user) {
-      return { success: false, errors: { _form: ["Active user account not found."] } };
+      return { success: false, errors: { _form: [USER_NOT_FOUND_MESSAGE] } };
     }
 
     const prompt = buildSecurePrompt({
@@ -195,7 +196,7 @@ export async function deleteATSAnalysis(id) {
       where: { clerkUserId: userId },
     });
     if (!user) {
-      return { success: false, errors: { _form: ["User profile not found."] } };
+      return { success: false, errors: { _form: [USER_NOT_FOUND_MESSAGE] } };
     }
 
     const { count } = await db.atsAnalysis.deleteMany({

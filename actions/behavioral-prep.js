@@ -1,17 +1,26 @@
 "use server";
-
 import { db } from "@/lib/prisma";
+import { UNAUTHORIZED_RESPONSE } from "@/lib/auth-errors";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { buildSecurePrompt, parseAIJson } from "@/lib/prompt-safety";
 import { generateGeminiContent } from "@/lib/gemini";
+import { USER_NOT_FOUND_MESSAGE } from "@/lib/errors";
 
 export async function generateAssessmentStrategy(company, assessmentType) {
   const { userId } = await auth();
-  if (!userId) return { success: false, errors: { _form: ["Unauthorized"] } };
+  if (!userId) return UNAUTHORIZED_RESPONSE;
 
   if (!company || !assessmentType) {
     return { success: false, errors: { _form: ["Company and Assessment Type are required."] } };
+  }
+
+  const user = await db.user.findUnique({
+    where: { clerkUserId: userId },
+  });
+
+  if (!user) {
+    return { success: false, errors: { _form: [USER_NOT_FOUND_MESSAGE] } };
   }
 
   const prompt = buildSecurePrompt({
@@ -37,16 +46,14 @@ export async function generateAssessmentStrategy(company, assessmentType) {
   try {
     const aiResult = await generateGeminiContent(prompt);
     const parsedData = parseAIJson(aiResult.response.text());
-
     const record = await db.behavioralPrep.create({
       data: {
-        userId,
+        userId: user.id,
         company,
         assessmentType,
         content: parsedData,
       },
     });
-
     revalidatePath("/behavioral-prep");
     return { success: true, data: record };
   } catch (error) {
@@ -59,10 +66,15 @@ export async function getBehavioralPreps() {
   const { userId } = await auth();
   if (!userId) return { success: false, data: [] };
 
-  const records = await db.behavioralPrep.findMany({
-    where: { userId },
-    orderBy: { createdAt: "desc" },
+  const user = await db.user.findUnique({
+    where: { clerkUserId: userId },
   });
 
+  if (!user) return { success: false, data: [] };
+
+  const records = await db.behavioralPrep.findMany({
+    where: { userId: user.id },
+    orderBy: { createdAt: "desc" },
+  });
   return { success: true, data: records };
 }
