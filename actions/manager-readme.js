@@ -7,10 +7,11 @@ import { revalidatePath } from "next/cache";
 import { buildSecurePrompt, parseAIJson } from "@/lib/prompt-safety";
 import { generateGeminiContent } from "@/lib/gemini";
 import { getHistoryUser } from "@/lib/history-user";
+import { UNAUTHORIZED_RESPONSE } from "@/lib/auth-errors";
 
 export async function buildReadme(style, boundaries, feedback) {
   const { userId } = await auth();
-  if (!userId) return { success: false, errors: { _form: ["Unauthorized"] } };
+  if (!userId) return UNAUTHORIZED_RESPONSE;
 
   const user = await getUserByClerkId(userId);
   if (!user) return { success: false, errors: { _form: ["User not found"] } };

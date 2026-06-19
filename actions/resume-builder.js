@@ -1,19 +1,21 @@
 "use server";
-
+import { UNAUTHORIZED_RESPONSE } from "@/lib/auth-errors";
 import { db } from "@/lib/prisma";
 import { getUserByClerkId } from "@/lib/user";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { buildSecurePrompt } from "@/lib/prompt-safety";
-import { parseAIJson } from "@/lib/validate";
+import { validateOutput } from "@/lib/validate";
+import { resumeOutputSchema } from "@/lib/schemas/resume";
 import { generateGeminiContent } from "@/lib/gemini";
 import { buildUserProfileContext } from "@/lib/ai-context";
 import { checkRateLimit, formatResetTime } from "@/lib/rate-limit-actions";
-import { getHistoryUser } from "@/lib/history-user";
+import { EMPTY_HISTORY_RESPONSE } from "@/lib/history-response";
+import { createErrorResponse } from "@/lib/action-errors";
 
 export async function generateResumeContent(jobDescription) {
   const { userId } = await auth();
-  if (!userId) return { success: false, errors: { _form: ["Unauthorized"] } };
+  if (!userId) return UNAUTHORIZED_RESPONSE;
 
   const limit = await checkRateLimit(userId, "resumeBuilder");
   if (!limit.allowed) {
@@ -29,8 +31,8 @@ export async function generateResumeContent(jobDescription) {
     return { success: false, errors: { _form: ["Please provide a valid job description (at least 50 characters)."] } };
   }
 
-  const user = await getHistoryUser(userId);
-  if (!user) return { success: false, errors: { _form: ["User not found"] } };
+  const user = await getUserByClerkId(userId);
+  if (!user) return createErrorResponse("User not found");
 
   const prompt = buildSecurePrompt({
     context: buildUserProfileContext(user),
@@ -83,7 +85,12 @@ export async function generateResumeContent(jobDescription) {
 
   try {
     const aiResult = await generateGeminiContent(prompt);
-    const parsedData = parseAIJson(aiResult.response.text());
+    const validation = validateOutput(resumeOutputSchema, aiResult.response.text());
+    if (!validation.success) {
+      console.error("Resume output validation failed:", validation.errors);
+      return createErrorResponse("AI returned an unexpected format. Please try again.");
+    }
+    const parsedData = validation.data;
 
     const record = await db.resumeGeneration.create({
       data: {
@@ -97,13 +104,15 @@ export async function generateResumeContent(jobDescription) {
     return { success: true, data: record };
   } catch (error) {
     console.error("Resume Generation Error:", error);
-    return { success: false, errors: { _form: [error.message || "Failed to generate resume"] } };
+    return createErrorResponse(
+  error.message || "Failed to generate resume"
+);
   }
 }
 
 export async function getResumeHistory() {
   const { userId } = await auth();
-  if (!userId) return { success: false, data: [] };
+  if (!userId) return EMPTY_HISTORY_RESPONSE;
 
   const user = await getUserByClerkId(userId);
   if (!user) return { success: false, data: [] };

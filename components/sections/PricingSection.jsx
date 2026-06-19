@@ -1,33 +1,10 @@
-import Link from "next/link";
-import { motion } from "framer-motion";
-import { Check, ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { StaggerContainer, StaggerItem } from "@/components/ui/stagger";
-
-const plans = [
-  {
-    name: "Starter",
-    price: "$0",
-    period: "/month",
-    desc: "Perfect for getting started",
-    features: [
-      "1 AI Interview per month",
-      "Basic resume analysis",
-      "Community support",
-    ],
-    href: "/signup",
-    cta: "Get Started",
 "use client";
 
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Check, ArrowRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  FadeUp,
-  StaggerContainer,
-  StaggerItem,
-} from "@/components/motion";
+import { FadeUp, StaggerContainer, StaggerItem } from "@/components/motion";
 
 const plans = [
   {
@@ -54,18 +31,6 @@ const plans = [
     name: "Pro",
     price: "$29",
     period: "/month",
-    desc: "For serious job seekers",
-    features: [
-      "Unlimited AI interviews",
-      "Advanced resume analysis",
-      "Priority support",
-      "Interview cheat sheets",
-      "Mock interviews",
-    ],
-    href: "/signup",
-    cta: "Start Free Trial",
-    price: "$15",
-    period: "/month",
     desc: "Everything you need to accelerate your career and land offers.",
     features: [
       "Unlimited Resumes & Cover Letters",
@@ -84,18 +49,6 @@ const plans = [
   },
   {
     name: "Enterprise",
-    price: "$99",
-    period: "/month",
-    desc: "For teams and organizations",
-    features: [
-      "Everything in Pro",
-      "Team collaboration",
-      "Custom branding",
-      "API access",
-      "Dedicated account manager",
-    ],
-    href: "/contact",
-    cta: "Contact Sales",
     price: "$49",
     period: "/month",
     desc: "For teams and organizations looking to upskill their workforce.",
@@ -118,17 +71,6 @@ const plans = [
 
 export function PricingSection() {
   return (
-    <section className="py-20 px-4 bg-gradient-to-b from-background to-secondary/20">
-      <div className="container mx-auto">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-            Choose Your Plan
-          </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
-            Select the perfect plan for your career journey. Upgrade or cancel
-            anytime.
-          </p>
-        </div>
     <section
       id="pricing"
       className="relative py-8 md:py-12 bg-muted/30 overflow-hidden"
@@ -192,16 +134,8 @@ export function PricingSection() {
                   </div>
 
                   <ul className="space-y-3">
-                    {plan.features.map((f) => (
-                      <li key={f} className="flex items-start gap-3">
-                        <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-                        <span className="text-sm text-muted-foreground">
-                          {f}
                     {plan.features.map((feature) => (
-                      <li
-                        key={feature}
-                        className="flex items-start gap-3"
-                      >
+                      <li key={feature} className="flex items-start gap-3">
                         <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />
                         <span className="text-sm text-muted-foreground">
                           {feature}
@@ -215,7 +149,6 @@ export function PricingSection() {
                       className={`w-full h-12 rounded-xl font-bold ${
                         plan.popular
                           ? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg"
-                          : "border border-border bg-card text-white hover:bg-primary hover:text-primary-foreground"
                           : "border border-border bg-card text-foreground hover:bg-primary hover:text-primary-foreground"
                       }`}
                     >
@@ -223,7 +156,6 @@ export function PricingSection() {
                       <ArrowRight className="h-4 w-4 ml-2" />
                     </Button>
                   </Link>
-
                 </div>
               </motion.div>
             </StaggerItem>
@@ -232,5 +164,4 @@ export function PricingSection() {
       </div>
     </section>
   );
-}
 }

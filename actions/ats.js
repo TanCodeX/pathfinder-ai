@@ -7,8 +7,9 @@ import { isFeatureEnabled } from "@/lib/ai-gating";
 import { ATS_ANALYSIS_CACHE_TTL_MS, cachedGenerateGeminiContent, generateCacheKey } from "@/lib/cache";
 import { buildSecurePrompt } from "@/lib/prompt-safety";
 import { buildUserProfileContext } from "@/lib/ai-context";
-import { validateInput, parseAIJson } from "@/lib/validate";
+import { validateInput, validateOutput, parseAIJson } from "@/lib/validate";
 import { atsAnalysisSchema } from "@/lib/schemas/forms";
+import { atsAnalysisOutputSchema } from "@/lib/schemas";
 import { normalizeAtsSuggestions } from "@/lib/ats";
 import { checkRateLimit, formatResetTime } from "@/lib/rate-limit-actions";
 import { USER_NOT_FOUND_MESSAGE } from "@/lib/errors";
@@ -111,7 +112,12 @@ IMPORTANT: Return ONLY valid JSON. No markdown, no explanation outside the JSON.
         ttl: ATS_ANALYSIS_CACHE_TTL_MS,
       }
     );
-    const parsedAnalysis = parseAIJson(result.response.text());
+    const outputValidation = validateOutput(atsAnalysisOutputSchema, result.response.text());
+    if (!outputValidation.success) {
+      console.error("ATS analysis output validation failed:", outputValidation.errors);
+      return { success: false, errors: { _form: ["AI returned an unexpected format. Please try again."] } };
+    }
+    const parsedAnalysis = outputValidation.data;
 
     const matchedKeywords = Array.isArray(parsedAnalysis.matchedKeywords) ? parsedAnalysis.matchedKeywords.map(String) : [];
     const missingKeywords = Array.isArray(parsedAnalysis.missingKeywords) ? parsedAnalysis.missingKeywords.map(String) : [];
