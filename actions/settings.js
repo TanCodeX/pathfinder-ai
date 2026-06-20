@@ -1,27 +1,11 @@
 "use server";
 
 import { db } from "@/lib/prisma";
+import { getUserByClerkId } from "@/lib/user";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { validateInput } from "@/lib/validate";
 import { userSettingsSchema } from "@/lib/schemas/forms";
-
-async function getUserByClerkId(userId) {
-  try {
-    const user = await db.user.findUnique({
-      where: { clerkUserId: userId },
-    });
-
-    if (!user) {
-      throw new Error("User not found");
-    }
-
-    return user;
-  } catch (error) {
-    console.error("[Settings Action] Error fetching user:", error.message);
-    throw error;
-  }
-}
 
 function normalizeSettings(settings) {
   if (!settings) return { notifications: true, emailAlerts: true };
