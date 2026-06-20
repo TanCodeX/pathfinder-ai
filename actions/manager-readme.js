@@ -6,6 +6,7 @@ import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { buildSecurePrompt, parseAIJson } from "@/lib/prompt-safety";
 import { generateGeminiContent } from "@/lib/gemini";
+import { getHistoryUser } from "@/lib/history-user";
 import { createErrorResponse } from "@/lib/action-errors";
 import { EMPTY_HISTORY_RESPONSE } from "@/lib/history-response";
 import { UNAUTHORIZED_RESPONSE } from "@/lib/auth-errors";
@@ -14,7 +15,7 @@ export async function buildReadme(style, boundaries, feedback) {
   const { userId } = await auth();
   if (!userId) return UNAUTHORIZED_RESPONSE;
 
-  const user = await getUserByClerkId(userId);
+  const user = await getHistoryUser(userId);
   if (!user) return { success: false, errors: { _form: ["User not found"] } };
 
   if (!style || !boundaries || !feedback) {
@@ -63,7 +64,7 @@ export async function getManagerReadmes() {
   const { userId } = await auth();
   if (!userId) return EMPTY_HISTORY_RESPONSE;
 
-  const user = await getUserByClerkId(userId);
+  const user = await getHistoryUser(userId);
   if (!user) return { success: false, data: [] };
 
   const records = await db.managerReadme.findMany({
