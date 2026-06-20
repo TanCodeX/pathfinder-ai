@@ -4,7 +4,7 @@ import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { generateGeminiContent } from "@/lib/gemini";
 import { checkRateLimit, formatResetTime } from "@/lib/rate-limit-actions";
-import { buildSecurePrompt } from "@/lib/prompt-safety";
+import { buildSecurePrompt, parseAIJson } from "@/lib/prompt-safety";
 
 export async function chatSalaryNegotiation(history, userMessage) {
   const { userId } = await auth();
@@ -72,12 +72,7 @@ export async function evaluateNegotiation(history) {
 
   try {
     const aiResult = await generateGeminiContent(prompt);
-    let rawText = aiResult.response.text();
-    // remove markdown block
-    if (rawText.startsWith("\`\`\`json")) {
-      rawText = rawText.replace(/\`\`\`json/g, "").replace(/\`\`\`/g, "").trim();
-    }
-    const parsed = JSON.parse(rawText);
+    const parsed = parseAIJson(aiResult.response.text());
     return { success: true, data: parsed };
   } catch (error) {
     console.error("Negotiation evaluation error:", error);
