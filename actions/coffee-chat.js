@@ -8,18 +8,29 @@ import { generateGeminiContent } from "@/lib/gemini";
 
 export async function startCoffeeChat(industry, targetRole) {
   const { userId } = await auth();
-  if (!userId) return { success: false, errors: { _form: ["Unauthorized"] } };
 
-  const user = await db.user.findUnique({ where: { clerkUserId: userId } });
-  if (!user) return { success: false, errors: { _form: ["User not found"] } };
+  if (!userId) {
+    return { success: false, errors: { _form: ["Unauthorized"] } };
+  }
+
+  const user = await db.user.findUnique({
+    where: { clerkUserId: userId },
+  });
+
+  if (!user) {
+    return { success: false, errors: { _form: ["User not found"] } };
+  }
 
   if (!industry || !targetRole) {
-    return { success: false, errors: { _form: ["Industry and target role are required."] } };
+    return {
+      success: false,
+      errors: { _form: ["Industry and target role are required."] },
+    };
   }
 
   const initialMessage = {
     role: "assistant",
-    content: `Hi there! Thanks for reaching out. I'm a Senior Executive in ${industry} overseeing ${targetRole}s. What would you like to know about the industry or the role?`
+    content: `Hi there! Thanks for reaching out. I'm a Senior Executive in ${industry} overseeing ${targetRole}s. What would you like to know about the industry or the role?`,
   };
 
   try {
@@ -33,13 +44,22 @@ export async function startCoffeeChat(industry, targetRole) {
     });
 
     revalidatePath("/coffee-chat");
-    return { success: true, data: record };
+
+    return {
+      success: true,
+      data: record,
+    };
   } catch (error) {
     console.error("Start Coffee Chat Error:", error);
-    return { success: false, errors: { _form: [error.message || "Failed to start session"] } };
+
+    return {
+      success: false,
+      errors: {
+        _form: [error.message || "Failed to start session"],
+      },
+    };
   }
 }
-
 export async function sendCoffeeChatMessage(sessionId, userMessage) {
   const { userId } = await auth();
   if (!userId) return { success: false, errors: { _form: ["Unauthorized"] } };

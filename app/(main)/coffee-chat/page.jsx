@@ -48,6 +48,7 @@ export default function CoffeeChatPage() {
     setIsStarting(true);
     try {
       const res = await startCoffeeChat(industry, targetRole);
+      console.log("Coffee Chat Response:", res);
       if (res.success) {
         setIndustry("");
         setTargetRole("");
@@ -111,7 +112,7 @@ export default function CoffeeChatPage() {
   };
 
   return (
-    <div className="container max-w-6xl py-12 px-4 md:px-6 h-[calc(100vh-4rem)] flex flex-col">
+    <div className="container max-w-6xl py-12 px-4 md:px-6 min-h-screen flex flex-col">
       <div className="space-y-4 mb-8">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-500">
           <Coffee className="h-4 w-4" />
@@ -156,7 +157,7 @@ export default function CoffeeChatPage() {
         </div>
 
         {/* Main Area */}
-        <div className="lg:col-span-3 h-full glass rounded-3xl border border-border flex flex-col overflow-hidden">
+        <div className="lg:col-span-3 glass rounded-3xl border border-border flex flex-col">
           {currentSession ? (
             <>
               {/* Header */}
@@ -174,7 +175,7 @@ export default function CoffeeChatPage() {
               </div>
 
               {/* Chat Area */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-6 custom-scrollbar bg-gradient-to-b from-background/50 to-background/20">
+              <div className="flex-1 overflow-y-auto p-4 space-y-6 custom-scrollbar bg-gradient-to-b from-background/50 to-background/20" style={{ maxHeight: "calc(100vh - 350px)" }}>
                 {currentSession.chatHistory.map((msg, i) => (
                   <motion.div 
                     key={i}
@@ -246,7 +247,7 @@ export default function CoffeeChatPage() {
 
               {/* Input */}
               {!currentSession.feedback && (
-                <div className="p-4 border-t border-border bg-background/50">
+                <div className="p-4 border-t border-border bg-background/50 mt-auto">
                   <form onSubmit={handleSendMessage} className="relative flex items-center">
                     <Input
                       value={message}
@@ -268,7 +269,7 @@ export default function CoffeeChatPage() {
               )}
             </>
           ) : (
-            <div className="h-full flex items-center justify-center p-8">
+            <div className="flex-1 flex items-center justify-center p-8">
               <div className="max-w-md w-full space-y-6">
                 <div className="text-center space-y-2">
                   <div className="h-16 w-16 bg-amber-500/10 rounded-2xl mx-auto flex items-center justify-center mb-6">
