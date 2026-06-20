@@ -3,11 +3,12 @@
 import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
+import { getAuthenticatedUserId } from "@/lib/auth-userid";
 import { buildSecurePrompt, parseAIJson } from "@/lib/prompt-safety";
 import { generateGeminiContent } from "@/lib/gemini";
 
 export async function planCareerBreak(duration, reason, returnGoals) {
-  const { userId } = await auth();
+  const userId = await getAuthenticatedUserId(auth);
   if (!userId) return { success: false, errors: { _form: ["Unauthorized"] } };
 
   const user = await db.user.findUnique({ where: { clerkUserId: userId } });
@@ -59,7 +60,7 @@ export async function planCareerBreak(duration, reason, returnGoals) {
 }
 
 export async function getCareerBreakPlans() {
-  const { userId } = await auth();
+  const userId = await getAuthenticatedUserId(auth);
   if (!userId) return { success: false, data: [] };
 
   const user = await db.user.findUnique({ where: { clerkUserId: userId } });
