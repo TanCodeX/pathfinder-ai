@@ -61,12 +61,16 @@ export default function Quiz() {
     setData: setResultData,
   } = useFetch(saveQuizResult);
 
+  const questions = quizData?.questions || [];
+  const sessionId = quizData?.sessionId || null;
+
   useEffect(() => {
     if (quizData) {
+      setAnswers(new Array(questions.length).fill(null));
       const qs = quizData.questions || quizData;
       setAnswers(new Array(qs.length).fill(null));
     }
-  }, [quizData]);
+  }, [quizData, questions]);
 
   const handleAnswer = (answer) => {
     const newAnswers = [...answers];
@@ -75,6 +79,7 @@ export default function Quiz() {
   };
 
   const handleNext = () => {
+    if (currentQuestion < questions.length - 1) {
     const qs = quizData?.questions || quizData;
     if (currentQuestion < qs.length - 1) {
       setCurrentQuestion(currentQuestion + 1);
@@ -86,6 +91,7 @@ export default function Quiz() {
 
   const finishQuiz = async () => {
     try {
+      await saveQuizResultFn(sessionId, answers, selectedCategory);
       const qs = quizData?.questions || quizData;
       await saveQuizResultFn(qs, answers, selectedCategory);
       toast.success("Quiz completed!");
@@ -168,6 +174,7 @@ export default function Quiz() {
     );
   }
 
+  const question = questions[currentQuestion];
   const isQuizValid = isValidQuizQuestions(quizData);
   if (!isQuizValid) {
     return (
@@ -251,7 +258,7 @@ export default function Quiz() {
           {savingResult && (
             <BarLoader className="mt-4" width={"100%"} color="gray" />
           )}
-          {currentQuestion < quizData.length - 1
+          {currentQuestion < questions.length - 1
             ? "Next Question"
             : "Finish Quiz"}
         </Button>

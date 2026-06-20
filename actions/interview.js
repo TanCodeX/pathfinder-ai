@@ -3,9 +3,11 @@
 import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { generateGeminiContent } from "@/lib/gemini";
-import { cachedGenerateGeminiContent, QUIZ_CACHE_TTL_MS, generateCacheKey } from "@/lib/cache";
+import { cachedGenerateGeminiContent, QUIZ_CACHE_TTL_MS, generateCacheKey, cacheStore } from "@/lib/cache";
 import { buildSecurePrompt } from "@/lib/prompt-safety";
 import { buildUserProfileContext } from "@/lib/ai-context";
+import { parseAIJson } from "@/lib/validate";
+import crypto from "crypto";
 import { validateInput, validateOutput } from "@/lib/validate";
 import { quizCategorySchema, quizResultSaveSchema } from "@/lib/schemas/forms";
 import { interviewQuestionsOutputSchema, voiceFeedbackOutputSchema, videoFeedbackOutputSchema } from "@/lib/schemas";
@@ -561,6 +563,12 @@ Return ONLY a valid JSON object matching this schema. Do not output any markdown
     }
   ]
 }`,
+  });
+
+  let questions = [];
+  try {
+    const result = await generateGeminiContent(prompt);
+    const quiz = parseAIJson(result.response.text());
     });
 
     try {
@@ -583,6 +591,11 @@ Return ONLY a valid JSON object matching this schema. Do not output any markdown
         isFallback: true
       };
     }
+
+    questions = quiz.questions.slice(0, 10);
+  } catch (error) {
+    console.error("AI Quiz generation failed, using default questions:", error);
+    questions = FALLBACK_QUESTIONS;
   } catch (error) {
     console.error("Quiz generation top-level error:", error);
     if (process.env.NODE_ENV === "test") {
@@ -593,11 +606,66 @@ Return ONLY a valid JSON object matching this schema. Do not output any markdown
       error: error.message || "Failed to generate quiz."
     };
   }
+
+  const sessionId = crypto.randomUUID();
+  const cacheKey = `quiz-session:${userId}:${sessionId}`;
+  await cacheStore.set(cacheKey, questions, QUIZ_CACHE_TTL_MS);
+
+  return { sessionId, questions };
 }
 
 /**
  * Saves a quiz result and generates AI-powered feedback if mistakes were made.
  */
+export async function saveQuizResult(sessionId, answers, category = "Technical") {
+  const { userId } = await auth();
+  if (!userId) throw new Error("Unauthorized");
+
+  const user = await db.user.findUnique({
+    where: { clerkUserId: userId },
+  });
+  if (!user) throw new Error("User not found");
+
+  if (!sessionId) throw new Error("Session ID is required");
+
+  const cacheKey = `quiz-session:${userId}:${sessionId}`;
+  const questions = await cacheStore.get(cacheKey);
+  if (!questions) {
+    throw new Error("Quiz session expired or not found. Please start a new quiz.");
+  }
+
+  const profileContext = buildUserProfileContext(user);
+
+  const sanitizedAnswers = Array.isArray(answers)
+    ? answers.slice(0, questions.length)
+    : [];
+
+  while (sanitizedAnswers.length < questions.length) {
+    sanitizedAnswers.push(null);
+  }
+
+  // Map user answers to question outcomes and compute score
+  const questionResults = [];
+  const wrongAnswers = [];
+  let correctCount = 0;
+
+  questions.forEach((q, index) => {
+    if (!q?.question) return;
+
+    const userAnswer = sanitizedAnswers[index];
+    const isCorrect = q.correctAnswer === userAnswer;
+    if (isCorrect) {
+      correctCount++;
+    }
+
+    const mappedQuestion = {
+      question: q.question.trim(),
+      options: q.options,
+      correctAnswer: q.correctAnswer,
+      userAnswer: userAnswer,
+      isCorrect,
+      explanation: q.explanation,
+    };
 export async function saveQuizResult(questions, answers, category = "Technical") {
   try {
     const { userId } = await auth();
@@ -611,6 +679,9 @@ export async function saveQuizResult(questions, answers, category = "Technical")
       throw new Error(`Quiz feedback limit reached. Resets in ${formatResetTime(feedbackLimit.resetAt)}.`);
     }
 
+  const score = questions.length > 0 ? (correctCount / questions.length) * 100 : 0;
+
+  let improvementTip = null;
     const {
       questions: validatedQuestions,
       answers: validatedAnswers,
@@ -694,6 +765,8 @@ export async function saveQuizResult(questions, answers, category = "Technical")
         improvementTip,
       },
     });
+
+    await cacheStore.delete(cacheKey);
 
     return assessment;
   } catch (error) {
