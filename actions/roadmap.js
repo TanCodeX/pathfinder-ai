@@ -6,6 +6,7 @@ import { generateGeminiContent } from "@/lib/gemini";
 import { buildSecurePrompt, generateWithStructuredOutput } from "@/lib/prompt-safety";
 import { buildUserProfileContext } from "@/lib/ai-context";
 import { validateOutput } from "@/lib/validate";
+import { USER_NOT_FOUND_MESSAGE } from "@/lib/user-errors";
 import { careerRoadmapOutputSchema, SCHEMA_DESCRIPTIONS } from "@/lib/schemas/outputs";
 import { checkRateLimit, formatResetTime } from "@/lib/rate-limit-actions";
 
@@ -63,7 +64,7 @@ export async function generateCareerRoadmap() {
     const user = await db.user.findUnique({
       where: { clerkUserId: userId },
     });
-    if (!user) throw new Error("User not found");
+    if (!user) throw new Error(USER_NOT_FOUND_MESSAGE);
 
     const prompt = buildSecurePrompt({
       context: `${buildUserProfileContext(user)}\n\n${ROADMAP_SYSTEM_CONTEXT}`,
