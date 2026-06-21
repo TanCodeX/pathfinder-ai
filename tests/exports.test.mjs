@@ -109,7 +109,7 @@ describe("GET /api/exports/[conversationId]", () => {
     expect(response.status).toBe(200);
     expect(response.headers.get("Content-Type")).toBe("application/json");
     expect(response.headers.get("Content-Disposition")).toBe(
-      'attachment; filename="My Test Chat.json"'
+      'attachment; filename="My_Test_Chat.json"'
     );
 
     const text = await response.text();
@@ -160,7 +160,7 @@ describe("GET /api/exports/[conversationId]", () => {
     expect(response.status).toBe(200);
     expect(response.headers.get("Content-Type")).toBe("text/markdown");
     expect(response.headers.get("Content-Disposition")).toBe(
-      'attachment; filename="My Test Chat.md"'
+      'attachment; filename="My_Test_Chat.md"'
     );
 
     const text = await response.text();

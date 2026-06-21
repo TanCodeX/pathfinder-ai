@@ -1,4 +1,5 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
+import { generateQuiz, saveQuizResult, getAssessment } from "../actions/interview.js";
 
 const mocks = vi.hoisted(() => ({
   auth: vi.fn(),
@@ -8,8 +9,9 @@ const mocks = vi.hoisted(() => ({
   cacheGet: vi.fn(),
   cacheSet: vi.fn(),
   cacheDelete: vi.fn(),
-  userFindUnique: vi.fn(),
   assessmentFindFirst: vi.fn(),
+  checkRateLimit: vi.fn(),
+  formatResetTime: vi.fn(),
 }));
 
 vi.mock("@clerk/nextjs/server", () => ({
@@ -23,8 +25,14 @@ vi.mock("@/lib/prisma", () => ({
     },
     assessment: {
       create: mocks.createAssessment,
+      findFirst: mocks.assessmentFindFirst,
     },
   },
+}));
+
+vi.mock("@/lib/rate-limit-actions", () => ({
+  checkRateLimit: mocks.checkRateLimit,
+  formatResetTime: mocks.formatResetTime,
 }));
 
 vi.mock("@/lib/gemini", () => ({
@@ -43,22 +51,10 @@ vi.mock("@/lib/cache", async () => {
   };
 });
 
-import { generateQuiz, saveQuizResult } from "../actions/interview.js";
-
 describe("interview actions", () => {
-      findUnique: mocks.userFindUnique,
-    },
-    assessment: {
-      findFirst: mocks.assessmentFindFirst,
-    },
-  },
-}));
-
-import { getAssessment } from "../actions/interview.js";
-
-describe("getAssessment", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.checkRateLimit.mockResolvedValue({ allowed: true });
   });
 
   describe("generateQuiz", () => {
@@ -179,36 +175,41 @@ describe("getAssessment", () => {
 
       expect(mocks.cacheDelete).not.toHaveBeenCalled();
       expect(mocks.createAssessment).not.toHaveBeenCalled();
-  it("returns null if user is not authenticated", async () => {
-    mocks.auth.mockResolvedValue({ userId: null });
-    const result = await getAssessment("assessment-1");
-    expect(result).toBeNull();
-    expect(mocks.userFindUnique).not.toHaveBeenCalled();
+    });
   });
 
-  it("returns null if user is not found in database", async () => {
-    mocks.auth.mockResolvedValue({ userId: "clerk-1" });
-    mocks.userFindUnique.mockResolvedValue(null);
-    const result = await getAssessment("assessment-1");
-    expect(result).toBeNull();
-  });
+  describe("getAssessment", () => {
+    it("returns null if user is not authenticated", async () => {
+      mocks.auth.mockResolvedValue({ userId: null });
+      const result = await getAssessment("assessment-1");
+      expect(result).toBeNull();
+      expect(mocks.findUniqueUser).not.toHaveBeenCalled();
+    });
 
-  it("fetches assessment using findFirst with id and userId", async () => {
-    const mockUser = { id: "user-1", clerkUserId: "clerk-1" };
-    const mockAssessment = { id: "assessment-1", userId: "user-1" };
+    it("returns null if user is not found in database", async () => {
+      mocks.auth.mockResolvedValue({ userId: "clerk-1" });
+      mocks.findUniqueUser.mockResolvedValue(null);
+      const result = await getAssessment("assessment-1");
+      expect(result).toBeNull();
+    });
 
-    mocks.auth.mockResolvedValue({ userId: "clerk-1" });
-    mocks.userFindUnique.mockResolvedValue(mockUser);
-    mocks.assessmentFindFirst.mockResolvedValue(mockAssessment);
+    it("fetches assessment using findFirst with id and userId", async () => {
+      const mockUser = { id: "user-1", clerkUserId: "clerk-1" };
+      const mockAssessment = { id: "assessment-1", userId: "user-1" };
 
-    const result = await getAssessment("assessment-1");
+      mocks.auth.mockResolvedValue({ userId: "clerk-1" });
+      mocks.findUniqueUser.mockResolvedValue(mockUser);
+      mocks.assessmentFindFirst.mockResolvedValue(mockAssessment);
 
-    expect(result).toEqual(mockAssessment);
-    expect(mocks.assessmentFindFirst).toHaveBeenCalledWith({
-      where: {
-        id: "assessment-1",
-        userId: "user-1",
-      },
+      const result = await getAssessment("assessment-1");
+
+      expect(result).toEqual(mockAssessment);
+      expect(mocks.assessmentFindFirst).toHaveBeenCalledWith({
+        where: {
+          id: "assessment-1",
+          userId: "user-1",
+        },
+      });
     });
   });
 });

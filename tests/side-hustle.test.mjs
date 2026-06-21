@@ -79,6 +79,10 @@ vi.mock("@/lib/gemini", () => ({
   generateGeminiContent: actionMocks.generateGeminiContent,
 }));
 
+vi.mock("next/cache", () => ({
+  revalidatePath: vi.fn(),
+}));
+
 describe("generateSideHustles", () => {
   beforeEach(() => {
     vi.clearAllMocks();
