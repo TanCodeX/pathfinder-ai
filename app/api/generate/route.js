@@ -9,6 +9,7 @@ import {
   getRateLimitIdentifier,
   enforceRateLimit,
   buildRateLimitResponse,
+  extractTrustedClientIp,
 } from "@/lib/rate-limit";
 import {
   preparePromptForGeneration,
@@ -218,7 +219,7 @@ export async function POST(request) {
   if (!user) {
     return respondError(ERROR_CODES.USER_NOT_FOUND);
   }
-  let cacheUser = userId || request.headers.get("x-forwarded-for") || "anonymous";
+  let cacheUser = userId || extractTrustedClientIp(request.headers) || "anonymous";
 
   const existingCachedResponse = await getCachedResponse(
     cacheUser,
