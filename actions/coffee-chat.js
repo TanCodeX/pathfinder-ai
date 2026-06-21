@@ -67,12 +67,10 @@ export async function sendCoffeeChatMessage(sessionId, userMessage) {
   const user = await db.user.findUnique({ where: { clerkUserId: userId } });
   if (!user) return { success: false, errors: { _form: ["User not found"] } };
 
-  const session = await db.coffeeChatSession.findUnique({ where: { id: sessionId } });
+  const session = await db.coffeeChatSession.findFirst({
+    where: { id: sessionId, userId: user.id },
+  });
   if (!session) return { success: false, errors: { _form: ["Session not found"] } };
-
-  if (session.userId !== user.id) {
-    return { success: false, errors: { _form: ["Unauthorized access to session"] } };
-  }
 
   const updatedHistory = [...session.chatHistory, { role: "user", content: userMessage }];
 
@@ -118,12 +116,10 @@ export async function generateCoffeeChatFeedback(sessionId) {
   const user = await db.user.findUnique({ where: { clerkUserId: userId } });
   if (!user) return { success: false, errors: { _form: ["User not found"] } };
 
-  const session = await db.coffeeChatSession.findUnique({ where: { id: sessionId } });
+  const session = await db.coffeeChatSession.findFirst({
+    where: { id: sessionId, userId: user.id },
+  });
   if (!session) return { success: false, errors: { _form: ["Session not found"] } };
-
-  if (session.userId !== user.id) {
-    return { success: false, errors: { _form: ["Unauthorized access to session"] } };
-  }
 
   const prompt = buildSecurePrompt({
     context: "You are an expert career coach analyzing an informational interview (coffee chat).",
