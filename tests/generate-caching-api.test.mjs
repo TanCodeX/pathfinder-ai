@@ -20,6 +20,9 @@ const mocks = vi.hoisted(() => ({
   enforceRateLimit: vi.fn(),
   getCachedResponse: vi.fn(),
   cacheResponse: vi.fn(),
+  getPendingGenerationRequest: vi.fn(),
+  setPendingGenerationRequest: vi.fn(),
+  deletePendingGenerationRequest: vi.fn(),
 }));
 
 vi.mock("@clerk/nextjs/server", () => ({
@@ -43,6 +46,9 @@ vi.mock("@/lib/rate-limit", () => ({
 vi.mock("@/lib/cache/cache-service", () => ({
   getCachedResponse: mocks.getCachedResponse,
   cacheResponse: mocks.cacheResponse,
+  getPendingGenerationRequest: mocks.getPendingGenerationRequest,
+  setPendingGenerationRequest: mocks.setPendingGenerationRequest,
+  deletePendingGenerationRequest: mocks.deletePendingGenerationRequest,
 }));
 
 // We need to set up minimal env vars needed by the route
