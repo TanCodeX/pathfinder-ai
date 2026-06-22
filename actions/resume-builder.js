@@ -1,6 +1,7 @@
 "use server";
 import { validateAuthenticatedUser } from "@/lib/auth-user";
 import { JOB_DESCRIPTION_MAX_LENGTH } from "@/lib/input-limits";
+import { isValidAIOutput } from "@/lib/ai-validation";
 import { UNAUTHORIZED_RESPONSE } from "@/lib/auth-errors";
 import { db } from "@/lib/prisma";
 import { getHistoryUserContext } from "@/lib/history-auth";
@@ -93,7 +94,7 @@ export async function generateResumeContent(jobDescription) {
   try {
     const aiResult = await generateGeminiContent(prompt);
     const validation = validateOutput(resumeOutputSchema, aiResult.response.text());
-    if (!validation.success) {
+    if (!isValidAIOutput(validation)) {
       console.error("Resume output validation failed:", validation.errors);
       return createErrorResponse("AI returned an unexpected format. Please try again.");
     }
