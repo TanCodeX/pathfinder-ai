@@ -2,6 +2,7 @@
 
 import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
+import { USER_NOT_FOUND_MESSAGE } from "@/lib/error-messages";
 import { revalidatePath } from "next/cache";
 import { getAuthenticatedUserId } from "@/lib/auth-userid";
 import { buildSecurePrompt, parseAIJson } from "@/lib/prompt-safety";
