@@ -39,6 +39,11 @@ vi.mock("@/lib/gemini", () => ({
   generateGeminiContent: mocks.generateGeminiContent,
 }));
 
+vi.mock("@/lib/rate-limit-actions", () => ({
+  checkRateLimit: mocks.checkRateLimit,
+  formatResetTime: mocks.formatResetTime,
+}));
+
 vi.mock("@/lib/cache", async () => {
   const actual = await vi.importActual("@/lib/cache");
   return {
@@ -55,6 +60,7 @@ describe("interview actions", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.checkRateLimit.mockResolvedValue({ allowed: true });
+    mocks.formatResetTime.mockReturnValue("10m");
   });
 
   describe("generateQuiz", () => {
@@ -143,7 +149,8 @@ describe("interview actions", () => {
       // User got 1 correct and 1 wrong
       const answers = ["4", "Framework"];
 
-      const result = await saveQuizResult("test-session-id", answers, "Technical");
+      const sessionId = "12345678-1234-1234-1234-1234567890ab";
+      const result = await saveQuizResult(sessionId, answers, "Technical");
 
       // Verify session was retrieved and deleted
       expect(mocks.cacheGet).toHaveBeenCalledTimes(1);
@@ -169,8 +176,9 @@ describe("interview actions", () => {
 
       mocks.cacheGet.mockResolvedValue(null);
 
+      const sessionId = "12345678-1234-1234-1234-1234567890ac";
       await expect(
-        saveQuizResult("expired-session-id", ["4"], "Technical")
+        saveQuizResult(sessionId, ["4"], "Technical")
       ).rejects.toThrow("Quiz session expired or not found");
 
       expect(mocks.cacheDelete).not.toHaveBeenCalled();

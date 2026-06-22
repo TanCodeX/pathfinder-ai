@@ -106,10 +106,14 @@ export default function Quiz() {
   };
 
   if (generatingQuiz) {
-    return <BarLoader className="mt-4" width={"100%"} color="gray" />;
+    return (
+      <Card className="mx-2 flex flex-col items-center justify-center py-10">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground mb-4" />
+        <CardDescription>Generating your personalized quiz questions...</CardDescription>
+      </Card>
+    );
   }
 
-  // Show results if quiz is completed
   if (resultData) {
     return (
       <div className="mx-2">

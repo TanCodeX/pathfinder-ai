@@ -44,6 +44,9 @@ vi.mock("@/lib/rate-limit", () => ({
 vi.mock("@/lib/cache/cache-service", () => ({
   getCachedResponse: mocks.getCachedResponse,
   cacheResponse: mocks.cacheResponse,
+  getPendingGenerationRequest: vi.fn().mockResolvedValue(null),
+  setPendingGenerationRequest: vi.fn().mockResolvedValue(undefined),
+  deletePendingGenerationRequest: vi.fn().mockResolvedValue(undefined),
   getPendingGenerationRequest: mocks.getPendingGenerationRequest,
   setPendingGenerationRequest: vi.fn(),
   deletePendingGenerationRequest: vi.fn(),
