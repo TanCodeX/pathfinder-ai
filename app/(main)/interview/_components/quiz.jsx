@@ -66,6 +66,7 @@ export default function Quiz() {
 
   useEffect(() => {
     if (questions && questions.length > 0) {
+    if (questions.length > 0) {
       setAnswers(new Array(questions.length).fill(null));
     }
   }, [quizData, questions]);
@@ -89,6 +90,7 @@ export default function Quiz() {
     try {
       const target = sessionId || questions;
       await saveQuizResultFn(target, answers, selectedCategory);
+      await saveQuizResultFn(sessionId, answers, selectedCategory);
       toast.success("Quiz completed!");
     } catch (error) {
       toast.error(error.message || "Failed to save quiz results");
@@ -169,8 +171,6 @@ export default function Quiz() {
     );
   }
 
-  const question = quizData.questions[currentQuestion];
-  const question = questions[currentQuestion];
   const isQuizValid = isValidQuizQuestions(quizData);
   if (!isQuizValid) {
     return (
@@ -195,7 +195,6 @@ export default function Quiz() {
     );
   }
 
-  const questions = quizData.questions || quizData;
   const question = questions[currentQuestion];
   const isFallback = quizData.isFallback;
 
@@ -208,7 +207,6 @@ export default function Quiz() {
           </div>
         )}
         <CardTitle className="flex items-center justify-between">
-          <span>Question {currentQuestion + 1} of {quizData.questions.length}</span>
           <span>Question {currentQuestion + 1} of {questions.length}</span>
           <span className="text-xs font-normal text-muted-foreground px-2 py-1 bg-muted rounded-full">
             {selectedCategory}
@@ -255,7 +253,6 @@ export default function Quiz() {
           {savingResult && (
             <BarLoader className="mt-4" width={"100%"} color="gray" />
           )}
-          {currentQuestion < quizData.questions.length - 1
           {currentQuestion < questions.length - 1
             ? "Next Question"
             : "Finish Quiz"}

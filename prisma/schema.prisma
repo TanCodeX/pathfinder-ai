@@ -13,7 +13,7 @@ datasource db {
 //
 // Composite indexes support common filter + sort query patterns. For example:
 //   - Message: [conversationId, createdAt] - fetch messages for a chat ordered by time
-//   - Conversation: [userId, updatedAt] - list a user's conversations by recency
+//   - Conversation: [userId, updatedAt] - list a user'"'"'s conversations by recency
 //
 // In PostgreSQL, @unique and @@unique constraints automatically create B-tree indexes.
 // Do NOT add a separate @@index on the same column(s) - it duplicates storage and
@@ -39,7 +39,7 @@ model User {
   careerGoals     String?
   bio             String?
   experience      Int?
-  
+
   // Settings
   saveChatHistory Boolean          @default(true)
 
@@ -99,7 +99,7 @@ model User {
 model Assessment {
   id             String   @id @default(cuid())
   userId         String
-  user           User     @relation(fields: [userId], references: [id])
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   quizScore      Float
   questions      Json[]
   category       String
@@ -113,7 +113,7 @@ model Assessment {
 model Resume {
   id        String   @id @default(cuid())
   userId    String   @unique
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   content   String   @db.Text
   atsScore  Float?
   feedback  String?
@@ -124,7 +124,7 @@ model Resume {
 model CoverLetter {
   id             String   @id @default(cuid())
   userId         String
-  user           User     @relation(fields: [userId], references: [id])
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   content        String
   jobDescription String?
   companyName    String
@@ -191,7 +191,7 @@ model Message {
 model AtsAnalysis {
   id              String   @id @default(cuid())
   userId          String
-  user            User     @relation(fields: [userId], references: [id])
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   resumeContent   String   @db.Text
   jobDescription  String   @db.Text
   jobTitle        String?
@@ -264,7 +264,7 @@ model AuditLog {
 model UserSettings {
   id              String   @id @default(cuid())
   userId          String   @unique
-  user            User     @relation(fields: [userId], references: [id])
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   theme           String   @default("light")
   notifications   Boolean  @default(true)
   emailAlerts     Boolean  @default(true)
@@ -775,4 +775,4 @@ model ResumeMatchAnalysis {
   createdAt            DateTime @default(now())
 
   @@index([userId, createdAt(sort: Desc)])
-}
+}

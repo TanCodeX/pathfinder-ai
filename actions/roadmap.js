@@ -140,7 +140,7 @@ Respond ONLY with a valid JSON object in this exact format (no markdown, no code
     // We don't save the fallback to the DB so they can try again later
     return {
       content: FALLBACK_ROADMAP,
-      userId: user.id,
+      userId: user?.id ?? null,
       isFallback: true
     };
   }

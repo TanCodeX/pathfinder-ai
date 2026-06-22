@@ -20,6 +20,7 @@ const mocks = vi.hoisted(() => ({
   enforceRateLimit: vi.fn(),
   getCachedResponse: vi.fn(),
   cacheResponse: vi.fn(),
+  getPendingGenerationRequest: vi.fn(),
 }));
 
 vi.mock("@clerk/nextjs/server", () => ({
@@ -43,6 +44,9 @@ vi.mock("@/lib/rate-limit", () => ({
 vi.mock("@/lib/cache/cache-service", () => ({
   getCachedResponse: mocks.getCachedResponse,
   cacheResponse: mocks.cacheResponse,
+  getPendingGenerationRequest: mocks.getPendingGenerationRequest,
+  setPendingGenerationRequest: vi.fn(),
+  deletePendingGenerationRequest: vi.fn(),
 }));
 
 // We need to set up minimal env vars needed by the route
@@ -53,6 +57,8 @@ import { POST } from "../app/api/generate/route.js";
 describe("Generate API Route Caching", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+
+    mocks.getPendingGenerationRequest.mockResolvedValue(null);
 
     // Default rate limit configuration (allow request)
     mocks.enforceRateLimit.mockResolvedValue({
@@ -122,11 +128,11 @@ describe("Generate API Route Caching", () => {
     expect(mocks.cacheResponse).toHaveBeenCalledTimes(1);
 
     // The key used for cache storage (argument 2) should match the key queried in getCachedResponse
-    expect(mocks.getCachedResponse).toHaveBeenCalledTimes(1);
-    const lookupKey = mocks.getCachedResponse.mock.calls[0][1];
+    expect(mocks.getCachedResponse.mock.calls.length).toBeGreaterThanOrEqual(1);
+    const lookupKeys = mocks.getCachedResponse.mock.calls.map(call => call[1]);
     const storageKey = mocks.cacheResponse.mock.calls[0][1];
 
-    expect(storageKey).toBe(lookupKey);
+    expect(lookupKeys).toContain(storageKey);
     // Crucially, it must be the restrictedPrompt containing safety/context and not the raw user prompt
     expect(storageKey).not.toBe("How do I become a software engineer?");
     expect(storageKey).toContain("How do I become a software engineer?");

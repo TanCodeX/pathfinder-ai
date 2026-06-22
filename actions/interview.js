@@ -1,16 +1,15 @@
 "use server";
 
+import crypto from "crypto";
 import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { generateGeminiContent } from "@/lib/gemini";
-import { cachedGenerateGeminiContent, QUIZ_CACHE_TTL_MS, generateCacheKey, cacheStore } from "@/lib/cache";
-import crypto from "crypto";
+import { cachedGenerateGeminiContent, QUIZ_CACHE_TTL_MS, generateCacheKey, getCacheStore } from "@/lib/cache";
 import { buildSecurePrompt } from "@/lib/prompt-safety";
 import { buildUserProfileContext } from "@/lib/ai-context";
 import { parseAIJson } from "@/lib/validate";
-import crypto from "crypto";
 import { validateInput, validateOutput } from "@/lib/validate";
-import { quizCategorySchema, quizResultSaveSchema } from "@/lib/schemas/forms";
+import { quizCategorySchema, quizResultSaveSessionSchema } from "@/lib/schemas/forms";
 import { interviewQuestionsOutputSchema, voiceFeedbackOutputSchema, videoFeedbackOutputSchema } from "@/lib/schemas";
 import { checkRateLimit, formatResetTime } from "@/lib/rate-limit-actions";
 
@@ -590,6 +589,33 @@ Return ONLY a valid JSON object matching this schema. Do not output any markdown
     await cacheStore.set(cacheKey, questions, QUIZ_CACHE_TTL_MS);
 
     return { sessionId, questions, isFallback };
+      const sessionId = crypto.randomUUID();
+      const cacheStore = getCacheStore();
+      const cacheKey = generateCacheKey("quiz:session", userId, sessionId);
+      const slicedQuestions = quizValidation.data.questions.slice(0, 10);
+      await cacheStore.set(cacheKey, slicedQuestions, QUIZ_CACHE_TTL_MS);
+
+      return {
+        sessionId,
+        questions: slicedQuestions,
+        isFallback: false
+      };
+    } catch (error) {
+      console.error("AI Quiz generation failed, using fallback questions:", error);
+      const industryId = user.industry?.split("-")[0]?.toLowerCase() || "tech";
+      const fallbackQuestions = FallbackQuizPool[industryId] || TECH_FALLBACK_QUESTIONS;
+
+      const sessionId = crypto.randomUUID();
+      const cacheStore = getCacheStore();
+      const cacheKey = generateCacheKey("quiz:session", userId, sessionId);
+      await cacheStore.set(cacheKey, fallbackQuestions, QUIZ_CACHE_TTL_MS);
+
+      return {
+        sessionId,
+        questions: fallbackQuestions,
+        isFallback: true
+      };
+    }
   } catch (error) {
     console.error("Quiz generation top-level error:", error);
     if (process.env.NODE_ENV === "test") {
@@ -606,13 +632,35 @@ Return ONLY a valid JSON object matching this schema. Do not output any markdown
  * Saves a quiz result and generates AI-powered feedback if mistakes were made.
  */
 export async function saveQuizResult(sessionIdOrQuestions, answers, category = "Technical") {
+export async function saveQuizResult(sessionId, answers, category = "Technical") {
   try {
     const { userId } = await auth();
     if (!userId) throw new Error("Unauthorized");
 
+    const validation = validateInput(quizResultSaveSessionSchema, { sessionId, answers, category });
+    if (!validation.success) return { success: false, errors: validation.errors };
+
     const feedbackLimit = await checkRateLimit(userId, "quizFeedback");
     if (!feedbackLimit.allowed) {
       throw new Error(`Quiz feedback limit reached. Resets in ${formatResetTime(feedbackLimit.resetAt)}.`);
+    }
+
+    const {
+      sessionId: validatedSessionId,
+      answers: validatedAnswers,
+      category: validatedCategory,
+    } = validation.data;
+
+    const cacheStore = getCacheStore();
+    const cacheKey = generateCacheKey("quiz:session", userId, validatedSessionId);
+    const questions = await cacheStore.get(cacheKey);
+
+    if (!questions || !Array.isArray(questions) || questions.length === 0) {
+      throw new Error("Quiz session not found or expired.");
+    }
+
+    if (questions.length !== validatedAnswers.length) {
+      throw new Error("Answers must match the number of questions.");
     }
 
     const user = await db.user.findUnique({
@@ -719,6 +767,8 @@ export async function saveQuizResult(sessionIdOrQuestions, answers, category = "
     if (cacheKey) {
       await cacheStore.delete(cacheKey);
     }
+    // Delete session cache entry to prevent replay attack
+    await cacheStore.delete(cacheKey);
 
     return assessment;
   } catch (error) {

@@ -6,6 +6,7 @@ import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { buildSecurePrompt, parseAIJson } from "@/lib/prompt-safety";
 import { generateGeminiContent } from "@/lib/gemini";
+import { getHistoryUserContext } from "@/lib/history-auth";
 async function getPerformanceReviewUser(userId) {
   return getUserByClerkId(userId);
 }
