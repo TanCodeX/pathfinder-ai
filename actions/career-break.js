@@ -1,6 +1,7 @@
 "use server";
 
 import { db } from "@/lib/prisma";
+import { userExists } from "@/lib/user-guards";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { getAuthenticatedUserId } from "@/lib/auth-userid";

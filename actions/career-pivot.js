@@ -5,6 +5,7 @@ import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { getAuthenticatedUserId } from "@/lib/auth-userid";
 import { buildSecurePrompt, parseAIJson } from "@/lib/prompt-safety";
+import { userExists } from "@/lib/user-guards";
 import { generateGeminiContent } from "@/lib/gemini";
 
 export async function generatePivotStrategy(currentRole, targetRole) {
