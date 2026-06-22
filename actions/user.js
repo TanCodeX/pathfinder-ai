@@ -138,11 +138,3 @@ export async function getUserOnboardingStatus() {
     throw new Error("Failed to get onboarding status");
   }
 }
-      
-    if (process.env.NODE_ENV === "test") {
-      throw error;
-    }
-    console.error("Error getting user onboarding status:", error);
-    return { isOnboarded: false, user: null, isSignedIn: false, error: error.message };
-  }
-}

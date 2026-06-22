@@ -6,10 +6,11 @@ import { revalidatePath } from "next/cache";
 import { getAuthenticatedUserId } from "@/lib/auth-userid";
 import { buildSecurePrompt, parseAIJson } from "@/lib/prompt-safety";
 import { generateGeminiContent } from "@/lib/gemini";
+import { UNAUTHORIZED_RESPONSE } from "@/lib/auth-errors";
 
 export async function planCareerBreak(duration, reason, returnGoals) {
   const userId = await getAuthenticatedUserId(auth);
-  if (!userId) return { success: false, errors: { _form: ["Unauthorized"] } };
+  if (!userId) return UNAUTHORIZED_RESPONSE;
 
   const user = await db.user.findUnique({ where: { clerkUserId: userId } });
   if (!user) return { success: false, errors: { _form: ["User not found"] } };

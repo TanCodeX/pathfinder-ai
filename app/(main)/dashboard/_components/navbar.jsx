@@ -93,7 +93,7 @@ export default function DashboardNavbar() {
     <>
       <header
         className={cn(
-          "sticky top-0 z-40 w-full transition-all duration-300",
+          "sticky top-4 z-40 w-full transition-all duration-300",
           scrolled
             ? "bg-background/80 backdrop-blur-xl border-b border-border/50 shadow-soft"
             : "bg-background/50 backdrop-blur-sm border-b border-border/30"

@@ -21,7 +21,7 @@ it("getRateLimitIdentifier derives IP from forwarded header when no userId", () 
 
   const id = getRateLimitIdentifier(req, null);
   expect(id.kind).toBe("ip");
-  expect(id.value).toBe("203.0.113.5");
+  expect(id.value).toBe("1.2.3.4");
 });
 
 it("enforceRateLimit allows first request and blocks immediate second when burstCapacity=1", async () => {

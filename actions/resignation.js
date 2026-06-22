@@ -15,6 +15,14 @@ export async function generateResignationLetter(circumstance, lastDay) {
     return { success: false, errors: { _form: ["Circumstance and Last Day are required."] } };
   }
 
+  const parsedLastDay = new Date(lastDay);
+  if (isNaN(parsedLastDay.getTime())) {
+    return { success: false, errors: { _form: ["Last Day must be a valid date."] } };
+  }
+  if (parsedLastDay < new Date()) {
+    return { success: false, errors: { _form: ["Last Day must be a future date."] } };
+  }
+
   const user = await db.user.findUnique({
     where: { clerkUserId: userId },
   });

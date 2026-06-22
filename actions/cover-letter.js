@@ -28,6 +28,10 @@ Sincerely,
  * Falls back to a safe template if AI generation or validation fails.
  */
 export async function generateCoverLetter(data) {
+  let coverLetterUser;
+  let companyName;
+  let jobTitle;
+  let jobDescription;
   try {
     const { userId } = await auth();
     if (!userId) throw new Error("Unauthorized");
@@ -44,8 +48,12 @@ export async function generateCoverLetter(data) {
       where: { clerkUserId: userId },
     });
     if (!user) throw new Error(USER_NOT_FOUND_MESSAGE);
+    coverLetterUser = user;
 
-    const { jobTitle, companyName, jobDescription } = validation.data;
+    const parsedData = validation.data;
+    companyName = parsedData.companyName;
+    jobTitle = parsedData.jobTitle;
+    jobDescription = parsedData.jobDescription;
 
     const prompt = buildSecurePrompt({
       context: `${buildUserProfileContext(user)}\n\nYou are a professional career coach and cover letter writer.`,
@@ -116,11 +124,11 @@ Respond ONLY with a valid JSON object in this exact format (no markdown, no code
     // We do not save fallback cover letters to the DB
     return {
       content: FALLBACK_COVER_LETTER,
-      companyName,
-      jobTitle,
-      jobDescription,
+      companyName: companyName ?? null,
+      jobTitle: jobTitle ?? null,
+      jobDescription: jobDescription ?? null,
       status: "fallback",
-      userId: user.id,
+      userId: coverLetterUser?.id ?? null,
       isFallback: true
     };
   }
