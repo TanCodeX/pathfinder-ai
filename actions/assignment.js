@@ -2,6 +2,7 @@
 
 import { db } from "@/lib/prisma";
 import { buildUserLookup } from "@/lib/user-query";
+import { createSuccessResponse } from "@/lib/action-success";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { buildSecurePrompt, parseAIJson } from "@/lib/prompt-safety";
@@ -71,5 +72,5 @@ export async function getAssignmentGrades() {
     orderBy: { createdAt: "desc" },
   });
 
-  return { success: true, data: records };
+  return createSuccessResponse(records);
 }
