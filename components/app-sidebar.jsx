@@ -151,7 +151,6 @@ const MENU_GROUPS = [
       { href: "/manager-readme", label: "Manager README Builder", icon: <BookOpen className="h-4 w-4 text-cyan-500" />, shortcut: "" },
       { href: "/founder-readiness", label: "Startup Founder Readiness", icon: <RocketIcon className="h-4 w-4 text-orange-500" />, shortcut: "" },
       { href: "/executive-presence", label: "Executive Presence Coach", icon: <Crown className="h-4 w-4 text-purple-500" />, shortcut: "" },
-      { href: "/bullet-rewriter", label: "Bullet Rewriter", icon: <FileText className="h-4 w-4 text-blue-400" />, shortcut: "" },
     ]
   },
   {
