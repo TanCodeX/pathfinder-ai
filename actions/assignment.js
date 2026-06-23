@@ -2,10 +2,11 @@
 
 import { db } from "@/lib/prisma";
 import { buildUserLookup } from "@/lib/user-query";
+import { createSuccessResponse } from "@/lib/action-success";
 import { auth } from "@clerk/nextjs/server";
 import { logActionError } from "@/lib/action-logger";
 import { revalidatePath } from "next/cache";
-import { createHistoryRecordsResponse } from "@/lib/history-records";
+import { EMPTY_HISTORY_RESPONSE } from "@/lib/history-response";
 import { buildSecurePrompt, parseAIJson } from "@/lib/prompt-safety";
 import { buildHistoryResponse } from "@/lib/history-loader";
 import { generateGeminiContent } from "@/lib/gemini";
@@ -13,11 +14,9 @@ import { getHistoryRecords } from "@/lib/history-query";
 import { USER_NOT_FOUND_RESPONSE } from "@/lib/user-not-found";
 
 export async function gradeAssignment(promptText, solutionText) {
-  const { userId } = await auth();
-  if (!userId) return { success: false, errors: { _form: ["Unauthorized"] } };
+  const user = await getAuthenticatedHistoryUser();
 
-  const user = await db.user.findUnique(buildUserLookup(userId));
-  if (!user) return USER_NOT_FOUND_RESPONSE;
+  if (!user) return EMPTY_HISTORY_RESPONSE;
 
   if (!promptText || !solutionText) {
     return { success: false, errors: { _form: ["Both prompt and solution are required."] } };
@@ -65,7 +64,7 @@ export async function gradeAssignment(promptText, solutionText) {
 
 export async function getAssignmentGrades() {
   const { userId } = await auth();
-  if (!userId) return { success: false, data: [] };
+  if (!userId) return EMPTY_HISTORY_RESPONSE;
 
   const user = await db.user.findUnique(buildUserLookup(userId));
   if (!user) return { success: false, data: [] };
