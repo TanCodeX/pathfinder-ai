@@ -58,8 +58,20 @@ export async function updateUser(data) {
               nextUpdate: getIndustryInsightRefreshTime(),
             },
           })
-        : await tx.industryInsight.findUnique({
+        : await tx.industryInsight.upsert({
             where: { industry: profileData.industry },
+            update: {},
+            create: {
+              industry: profileData.industry,
+              salaryRanges: [],
+              growthRate: 0,
+              demandLevel: "Medium",
+              topSkills: [],
+              marketOutlook: "AI insights generation failed. This profile will be updated automatically in the future.",
+              keyTrends: [],
+              recommendedSkills: [],
+              nextUpdate: getIndustryInsightRefreshTime(),
+            },
           });
 
       const updatedUser = await tx.user.update({
@@ -136,13 +148,5 @@ export async function getUserOnboardingStatus() {
   } catch (error) {
     console.error("Error fetching onboarding status:", error);
     throw new Error("Failed to get onboarding status");
-  }
-}
-      
-    if (process.env.NODE_ENV === "test") {
-      throw error;
-    }
-    console.error("Error getting user onboarding status:", error);
-    return { isOnboarded: false, user: null, isSignedIn: false, error: error.message };
   }
 }

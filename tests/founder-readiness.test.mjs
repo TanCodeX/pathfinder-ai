@@ -119,6 +119,32 @@ describe("generateFounderReadiness", () => {
             { phase: "Month 1", actionItems: ["Action item 1 for phase"] },
             { phase: "Month 2", actionItems: ["Action item 2 for phase"] },
             { phase: "Month 3", actionItems: ["Action item 3 for phase"] }
+          strengths: ["Excellent persistence and grit in challenging environments."],
+          blindSpots: [
+            { 
+              issue: "Direct sales experience", 
+              mitigation: "Hire a seasoned sales advisor to handle client outreach." 
+            }
+          ],
+          businessIdeaFeedback: "This is a highly viable business idea with strong market demand and clear differentiation in the industry.",
+          ninetyDayRoadmap: [
+            { phase: "Month 1", actionItems: ["Conduct initial customer discovery interviews."] },
+            { phase: "Month 2", actionItems: ["Build a minimal viable prototype for beta testing."] },
+            { phase: "Month 3", actionItems: ["Launch the product to early adopters and gather feedback."] }
+          strengths: ["Resilience"],
+          blindSpots: [{ issue: "Sales Strategy", mitigation: "Hire a business development partner" }],
+          businessIdeaFeedback: "Highly potential business idea with viable market fit.",
+          ninetyDayRoadmap: [
+            { phase: "Month 1", actionItems: ["Action Item 1"] },
+            { phase: "Month 2", actionItems: ["Action Item 2"] },
+            { phase: "Month 3", actionItems: ["Action Item 3"] }
+          strengths: ["Resilience", "Industry Domain Knowledge"],
+          blindSpots: [{ issue: "Lack of direct sales experience", mitigation: "Partner with or hire a sales co-founder" }],
+          businessIdeaFeedback: "The business idea is highly viable and has clear market demand.",
+          ninetyDayRoadmap: [
+            { phase: "Month 1", actionItems: ["Conduct user research"] },
+            { phase: "Month 2", actionItems: ["Build prototype MVP"] },
+            { phase: "Month 3", actionItems: ["Launch beta product"] }
           ]
         }),
       },

@@ -26,6 +26,10 @@ import { vi, afterAll, afterEach, beforeAll } from "vitest";
 // Mock build-time boundary guards in test environment
 vi.mock("server-only", () => ({}));
 vi.mock("client-only", () => ({}));
+vi.mock("next/cache", () => ({
+  revalidatePath: vi.fn(),
+  revalidateTag: vi.fn(),
+}));
 
 import { server } from "./mocks/server.mjs";
 

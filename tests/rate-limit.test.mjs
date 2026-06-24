@@ -39,7 +39,9 @@ function makeFakeRedisClient() {
     async del(key) {
       data.delete(key);
     },
-    eval(_script, { keys, arguments: args }) {
+    eval(_script, argObj) {
+      const { keys } = argObj;
+      const args = argObj.arguments;
       const key = keys[0];
       const limitPerMinute = Number(args[0]);
       const burstCapacity = Number(args[1]);
@@ -85,18 +87,6 @@ function makeFakeRedisClient() {
           JSON.stringify({ tokens, lastRefillAt, limitPerMinute, burstCapacity })
         );
         return [0, 0, retryAfterSeconds];
-      let allowed = 0;
-      let retryAfterSeconds = 0;
-
-      if (tokens >= 1) {
-        tokens -= 1;
-        allowed = 1;
-      } else {
-        const missingTokens = 1 - tokens;
-        retryAfterSeconds =
-          limitPerMinute > 0
-            ? Math.max(1, Math.ceil((missingTokens / limitPerMinute) * 60))
-            : 60;
       }
 
       tokens -= 1;
@@ -106,7 +96,6 @@ function makeFakeRedisClient() {
       );
 
       return [1, Math.floor(tokens), 0];
-      return [allowed, Math.floor(tokens), retryAfterSeconds];
     },
   };
 }

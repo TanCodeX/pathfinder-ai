@@ -1,4 +1,5 @@
 "use server";
+import { createErrorResponse } from "@/lib/action-errors";
 
 import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
@@ -18,7 +19,7 @@ export async function generateProposal(projectDetails, rate) {
   const user = await db.user.findUnique({
     where: { clerkUserId: userId },
   });
-  if (!user) return { success: false, errors: { _form: ["User not found"] } };
+  if (!user) return createErrorResponse("User not found");
 
   const prompt = buildSecurePrompt({
     context: buildUserProfileContext(user) + "\nYou are an expert freelance consultant and sales copywriter.",

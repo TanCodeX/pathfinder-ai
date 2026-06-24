@@ -1,4 +1,5 @@
 "use server";
+import { createErrorResponse } from "@/lib/action-errors";
 
 import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
@@ -15,10 +16,18 @@ export async function generateResignationLetter(circumstance, lastDay) {
     return { success: false, errors: { _form: ["Circumstance and Last Day are required."] } };
   }
 
+  const parsedLastDay = new Date(lastDay);
+  if (isNaN(parsedLastDay.getTime())) {
+    return { success: false, errors: { _form: ["Last Day must be a valid date."] } };
+  }
+  if (parsedLastDay < new Date()) {
+    return { success: false, errors: { _form: ["Last Day must be a future date."] } };
+  }
+
   const user = await db.user.findUnique({
     where: { clerkUserId: userId },
   });
-  if (!user) return { success: false, errors: { _form: ["User not found"] } };
+  if (!user) return createErrorResponse("User not found");
 
   const prompt = buildSecurePrompt({
     context: buildUserProfileContext(user),

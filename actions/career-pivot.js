@@ -3,16 +3,20 @@
 import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
+import { createErrorResponse } from "@/lib/action-errors";
 import { getAuthenticatedUserId } from "@/lib/auth-userid";
+import { USER_NOT_FOUND_MESSAGE } from "@/lib/errors";
 import { buildSecurePrompt, parseAIJson } from "@/lib/prompt-safety";
+import { userExists } from "@/lib/user-guards";
 import { generateGeminiContent } from "@/lib/gemini";
+import { UNAUTHORIZED_RESPONSE } from "@/lib/auth-errors";
 
 export async function generatePivotStrategy(currentRole, targetRole) {
   const userId = await getAuthenticatedUserId(auth);
-  if (!userId) return { success: false, errors: { _form: ["Unauthorized"] } };
+  if (!userId) return UNAUTHORIZED_RESPONSE;
 
   const user = await db.user.findUnique({ where: { clerkUserId: userId } });
-  if (!user) return { success: false, errors: { _form: ["User not found"] } };
+  if (!user) return createErrorResponse("User not found");
 
   if (!currentRole || !targetRole) {
     return { success: false, errors: { _form: ["Both current and target roles are required."] } };
