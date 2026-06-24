@@ -46,6 +46,9 @@ vi.mock("@/lib/rate-limit", () => ({
 vi.mock("@/lib/cache/cache-service", () => ({
   getCachedResponse: mocks.getCachedResponse,
   cacheResponse: mocks.cacheResponse,
+  getPendingGenerationRequest: vi.fn(async () => null),
+  setPendingGenerationRequest: vi.fn(async () => {}),
+  deletePendingGenerationRequest: vi.fn(async () => {}),
   getPendingGenerationRequest: mocks.getPendingGenerationRequest,
   setPendingGenerationRequest: mocks.setPendingGenerationRequest,
   deletePendingGenerationRequest: mocks.deletePendingGenerationRequest,
@@ -140,6 +143,8 @@ describe("Generate API Route Caching", () => {
     expect(mocks.cacheResponse).toHaveBeenCalledTimes(1);
 
     // The key used for cache storage (argument 2) should match the key queried in getCachedResponse
+    expect(mocks.getCachedResponse).toHaveBeenCalledTimes(2);
+    const lookupKey = mocks.getCachedResponse.mock.calls[1][1];
     expect(mocks.getCachedResponse.mock.calls.length).toBeGreaterThanOrEqual(1);
     const lookupKeys = mocks.getCachedResponse.mock.calls.map(call => call[1]);
     const storageKey = mocks.cacheResponse.mock.calls[0][1];
