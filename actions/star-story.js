@@ -17,6 +17,10 @@ export async function generateStarStory(rawExperience) {
     return { success: false, errors: { _form: ["Please provide a valid experience description."] } };
   }
 
+  if (rawExperience.trim().length > 3000) {
+    return { success: false, errors: { _form: ["Experience description must be under 3000 characters."] } };
+  }
+
   const prompt = buildSecurePrompt({
     context: "You are an expert career coach helping a candidate prepare for behavioral interviews.",
     task: `Transform the candidate's raw experience into a perfectly structured STAR format (Situation, Task, Action, Result). 
