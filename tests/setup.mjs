@@ -24,6 +24,10 @@ if (!process.env.GEMINI_API_KEY) {
 // Mock build-time boundary guards in test environment
 vi.mock("server-only", () => ({}));
 vi.mock("client-only", () => ({}));
+vi.mock("next/cache", () => ({
+  revalidatePath: vi.fn(),
+  revalidateTag: vi.fn(),
+}));
 
 // Mock next/cache globally to avoid Invariant errors in server actions
 vi.mock("next/cache", () => ({

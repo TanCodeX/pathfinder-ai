@@ -1,8 +1,10 @@
 "use server";
 import { validateAuthenticatedUser } from "@/lib/auth-user";
 import { JOB_DESCRIPTION_MAX_LENGTH } from "@/lib/input-limits";
+import { isValidAIOutput } from "@/lib/ai-validation";
 import { UNAUTHORIZED_RESPONSE } from "@/lib/auth-errors";
 import { db } from "@/lib/prisma";
+import { getHistoryUserContext } from "@/lib/history-auth";
 import { getUserByClerkId } from "@/lib/user";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
@@ -92,7 +94,7 @@ export async function generateResumeContent(jobDescription) {
   try {
     const aiResult = await generateGeminiContent(prompt);
     const validation = validateOutput(resumeOutputSchema, aiResult.response.text());
-    if (!validation.success) {
+    if (!isValidAIOutput(validation)) {
       console.error("Resume output validation failed:", validation.errors);
       return createErrorResponse("AI returned an unexpected format. Please try again.");
     }
@@ -117,11 +119,8 @@ export async function generateResumeContent(jobDescription) {
 }
 
 export async function getResumeHistory() {
-  const { userId } = await auth();
-  if (!userId) return EMPTY_HISTORY_RESPONSE;
-
-  const user = await getResumeBuilderUser(userId);
-  if (!user) return { success: false, data: [] };
+  const user = await getHistoryUserContext();
+  if (!user) return EMPTY_HISTORY_RESPONSE;
 
   const records = await db.resumeGeneration.findMany({
     where: { userId: user.id },

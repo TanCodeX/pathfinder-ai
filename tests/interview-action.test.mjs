@@ -40,6 +40,8 @@ describe("saveQuizResult", () => {
 
   it("saves quiz result with dynamic industry-aware fallback tip when AI fails", async () => {
     const { saveQuizResult } = await import("../actions/interview.js");
+    const { cacheStore, generateCacheKey } = await import("../lib/cache/index.js");
+    const { getCacheStore, generateCacheKey } = await import("../lib/cache/index.js");
 
     actionMocks.auth.mockResolvedValue({ userId: "user-123" });
     actionMocks.checkRateLimit.mockResolvedValue({ allowed: true });
@@ -57,6 +59,7 @@ describe("saveQuizResult", () => {
       ...data,
     }));
 
+    const sessionId = "12345678-1234-1234-1234-1234567890ab";
     const questions = [
       {
         question: "What is a stethoscope used for?",
@@ -65,9 +68,15 @@ describe("saveQuizResult", () => {
         explanation: "Stethoscopes detect internal body sounds.",
       },
     ];
+
+    const cacheKey = generateCacheKey("quiz-session", "user-123", sessionId);
+    const cacheStore = getCacheStore();
+    const cacheKey = generateCacheKey("quiz:session", "user-123", sessionId);
+    await cacheStore.set(cacheKey, questions);
+
     const answers = ["Measuring temperature"]; // Wrong answer
 
-    const result = await saveQuizResult(questions, answers, "Technical");
+    const result = await saveQuizResult(sessionId, answers, "Technical");
 
     expect(actionMocks.auth).toHaveBeenCalled();
     expect(actionMocks.checkRateLimit).toHaveBeenCalledWith("user-123", "quizFeedback");

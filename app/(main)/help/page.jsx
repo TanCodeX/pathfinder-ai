@@ -239,7 +239,7 @@ export default function HelpPage() {
             </a>
 
             <a
-              href="https://linkedin.com"
+              href="https://www.linkedin.com/in/harshvardhandwivedi/"
               target="_blank"
               rel="noopener noreferrer"
               className="group flex flex-col gap-3 p-5 rounded-xl border border-white/10 bg-white/[0.03] hover:border-blue-500/30 transition-colors"

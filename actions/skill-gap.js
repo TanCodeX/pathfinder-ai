@@ -1,5 +1,5 @@
 "use server";
-import { USER_NOT_FOUND_MESSAGE } from "@/lib/user-errors";
+import { USER_NOT_FOUND_MESSAGE } from "@/lib/errors";
 import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { generateGeminiContent } from "@/lib/gemini";

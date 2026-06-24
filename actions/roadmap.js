@@ -6,7 +6,7 @@ import { generateGeminiContent } from "@/lib/gemini";
 import { buildSecurePrompt, generateWithStructuredOutput } from "@/lib/prompt-safety";
 import { buildUserProfileContext } from "@/lib/ai-context";
 import { validateOutput } from "@/lib/validate";
-import { USER_NOT_FOUND_MESSAGE } from "@/lib/user-errors";
+import { USER_NOT_FOUND_MESSAGE } from "@/lib/errors";
 import { careerRoadmapOutputSchema, SCHEMA_DESCRIPTIONS } from "@/lib/schemas/outputs";
 import { checkRateLimit, formatResetTime } from "@/lib/rate-limit-actions";
 
@@ -52,8 +52,10 @@ const FALLBACK_ROADMAP = {
  * Builds the roadmap from the user's existing profile (skills, goals, target role, industry).
  */
 export async function generateCareerRoadmap() {
+  let authUserId;
   try {
     const { userId } = await auth();
+    authUserId = userId;
     if (!userId) throw new Error("Unauthorized");
 
     const limit = await checkRateLimit(userId, "roadmap");
@@ -140,7 +142,7 @@ Respond ONLY with a valid JSON object in this exact format (no markdown, no code
     // We don't save the fallback to the DB so they can try again later
     return {
       content: FALLBACK_ROADMAP,
-      userId: user.id,
+      userId: authUserId ?? null,
       isFallback: true
     };
   }

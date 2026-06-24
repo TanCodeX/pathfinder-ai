@@ -16,7 +16,7 @@ export async function buildReadme(style, boundaries, feedback) {
   if (!userId) return UNAUTHORIZED_RESPONSE;
 
   const user = await getHistoryUser(userId);
-  if (!user) return { success: false, errors: { _form: ["User not found"] } };
+  if (!user) return createErrorResponse("User not found");
 
   if (!style || !boundaries || !feedback) {
     return { success: false, errors: { _form: ["All fields are required."] } };

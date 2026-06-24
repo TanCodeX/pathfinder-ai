@@ -1,4 +1,5 @@
 "use server";
+import { createErrorResponse } from "@/lib/action-errors";
 
 import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
@@ -47,7 +48,7 @@ export async function createJobApplication(data) {
   const user = await db.user.findUnique({
     where: { clerkUserId: userId },
   });
-  if (!user) return { success: false, errors: { _form: ["User not found"] } };
+  if (!user) return createErrorResponse("User not found");
 
   try {
     const job = await db.jobApplication.create({
@@ -76,7 +77,7 @@ export async function updateJobApplicationStatus(id, status) {
   const user = await db.user.findUnique({
     where: { clerkUserId: userId },
   });
-  if (!user) return { success: false, errors: { _form: ["User not found"] } };
+  if (!user) return createErrorResponse("User not found");
 
   try {
     const job = await db.jobApplication.updateMany({
@@ -109,7 +110,7 @@ export async function updateJobApplicationInterviewDate(id, interviewDate) {
   const user = await db.user.findUnique({
     where: { clerkUserId: userId },
   });
-  if (!user) return { success: false, errors: { _form: ["User not found"] } };
+  if (!user) return createErrorResponse("User not found");
 
   try {
     const parsedDate = interviewDate ? new Date(interviewDate) : null;
@@ -146,7 +147,7 @@ export async function deleteJobApplication(id) {
   const user = await db.user.findUnique({
     where: { clerkUserId: userId },
   });
-  if (!user) return { success: false, errors: { _form: ["User not found"] } };
+  if (!user) return createErrorResponse("User not found");
 
   try {
     const job = await db.jobApplication.deleteMany({

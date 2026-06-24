@@ -5,6 +5,9 @@ import { getCoverLetter } from "@/actions/cover-letter";
 import CoverLetterPreview from "../_components/cover-letter-preview";
 import DownloadPdf from "@/components/Download-pdf";
 
+const sanitizeFileName = (str) =>
+  str?.toLowerCase().replace(/[\\/:*?"<>|]+/g, "").replace(/\s+/g, "-") || "untitled";
+
 export default async function EditCoverLetterPage({ params }) {
   const { id } = await params;
   const coverLetter = await getCoverLetter(id);
@@ -25,7 +28,7 @@ export default async function EditCoverLetterPage({ params }) {
           </h1>
           <DownloadPdf
             contentRefId="cover-letter-content"
-            fileName={`cover-letter-${coverLetter?.companyName?.toLowerCase().replace(/\s+/g, "-")}-${coverLetter?.jobTitle?.toLowerCase().replace(/\s+/g, "-")}.pdf`}
+            fileName={`cover-letter-${sanitizeFileName(coverLetter?.companyName)}-${sanitizeFileName(coverLetter?.jobTitle)}.pdf`}
             label="Download PDF"
           />
         </div>
