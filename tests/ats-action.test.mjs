@@ -21,8 +21,8 @@ vi.mock("@/lib/prisma", () => ({
       create: mocks.create,
     },
     aiRateLimit: {
-      findUnique: vi.fn().mockResolvedValue(null),
-      upsert: vi.fn().mockResolvedValue({}),
+      findUnique: () => Promise.resolve(null),
+      upsert: () => Promise.resolve({ count: 1 }),
     },
   },
 }));
@@ -35,10 +35,6 @@ vi.mock("@/lib/cache", async () => {
     generateCacheKey: mocks.generateCacheKey,
   };
 });
-
-vi.mock("next/cache", () => ({
-  revalidatePath: vi.fn(),
-}));
 
 import { analyzeATS } from "../actions/ats.js";
 
