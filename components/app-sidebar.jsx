@@ -57,6 +57,7 @@ import {
   HeartPulse,
   Rocket,
   Home,
+  Building2,
   Workflow,
   CalendarHeart,
   Globe,
@@ -107,6 +108,7 @@ const MENU_GROUPS = [
       { href: "/interview/star-builder", label: "STAR Builder", icon: <Star className="h-4 w-4 text-yellow-500" />, shortcut: "" },
       { href: "/interview/cheat-sheet", label: "Cheat Sheet", icon: <FileSearch className="h-4 w-4 text-zinc-500" />, shortcut: "" },
       { href: "/behavioral-prep", label: "Behavioral Prep", icon: <BrainCircuit className="h-4 w-4 text-rose-500" />, shortcut: "" },
+      { href: "/culture-matcher", label: "Culture Matcher", icon: <Building2 className="h-4 w-4 text-cyan-500" />, shortcut: "" },
       { href: "/coffee-chat", label: "Coffee Chat", icon: <Coffee className="h-4 w-4 text-amber-500" />, shortcut: "" },
       { href: "/assignment-grader", label: "Take-Home Grader", icon: <Code2 className="h-4 w-4 text-violet-500" />, shortcut: "" },
     ]

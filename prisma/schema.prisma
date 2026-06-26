@@ -55,6 +55,7 @@ model User {
   roadmaps             Roadmap[]
   jobApplications      JobApplication[]
   linkedinOptimizations LinkedInOptimization[]
+  cultureMatches       CultureMatch[]
   networkingEmails     NetworkingEmail[]
   projectIdeas         ProjectIdea[]
   resumeGenerations    ResumeGeneration[]
@@ -781,4 +782,16 @@ model ResumeMatchAnalysis {
   createdAt            DateTime @default(now())
 
   @@index([userId, createdAt(sort: Desc)])
+}
+
+model CultureMatch {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  companyUrl     String?  @db.Text
+  companyContent String?  @db.Text
+  analysis       Json
+  createdAt      DateTime @default(now())
+
+  @@index([userId])
 }
