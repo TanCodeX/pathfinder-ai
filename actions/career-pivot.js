@@ -6,9 +6,7 @@ import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { createErrorResponse } from "@/lib/action-errors";
 import { getAuthenticatedUserId } from "@/lib/auth-userid";
-import { USER_NOT_FOUND_MESSAGE } from "@/lib/errors";
 import { buildSecurePrompt, parseAIJson } from "@/lib/prompt-safety";
-import { userExists } from "@/lib/user-guards";
 import { generateGeminiContent } from "@/lib/gemini";
 import { UNAUTHORIZED_RESPONSE } from "@/lib/auth-errors";
 
