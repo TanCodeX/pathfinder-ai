@@ -12,10 +12,19 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { Slider } from "@/components/ui/slider";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useAccessibility } from "@/components/accessibility-provider";
 
 const DEFAULT_SETTINGS = {
   notifications: true,
   emailAlerts: true,
+  largeButtonsMode: false,
+  highContrastMode: false,
+  speechSpeed: 1.0,
+  preferredLanguage: "en",
+  preferredVoiceLanguage: "en",
+  oneTapCameraMode: false,
 };
 
 const DEFAULT_PROFILE = {
@@ -39,6 +48,12 @@ export default function SettingsClient({ userId, user, settings }) {
     () => ({
       notifications: settings?.notifications ?? DEFAULT_SETTINGS.notifications,
       emailAlerts: settings?.emailAlerts ?? DEFAULT_SETTINGS.emailAlerts,
+      largeButtonsMode: settings?.largeButtonsMode ?? DEFAULT_SETTINGS.largeButtonsMode,
+      highContrastMode: settings?.highContrastMode ?? DEFAULT_SETTINGS.highContrastMode,
+      speechSpeed: settings?.speechSpeed ?? DEFAULT_SETTINGS.speechSpeed,
+      preferredLanguage: settings?.preferredLanguage ?? DEFAULT_SETTINGS.preferredLanguage,
+      preferredVoiceLanguage: settings?.preferredVoiceLanguage ?? DEFAULT_SETTINGS.preferredVoiceLanguage,
+      oneTapCameraMode: settings?.oneTapCameraMode ?? DEFAULT_SETTINGS.oneTapCameraMode,
     }),
     [settings]
   );
@@ -62,10 +77,17 @@ export default function SettingsClient({ userId, user, settings }) {
   const [savedProfile, setSavedProfile] = useState(initialProfile);
   const [isPending, startTransition] = useTransition();
   const [isProfilePending, startProfileTransition] = useTransition();
+  const { updateSettings: updateContextSettings } = useAccessibility();
 
   const hasChanges =
     form.notifications !== savedSettings.notifications ||
-    form.emailAlerts !== savedSettings.emailAlerts;
+    form.emailAlerts !== savedSettings.emailAlerts ||
+    form.largeButtonsMode !== savedSettings.largeButtonsMode ||
+    form.highContrastMode !== savedSettings.highContrastMode ||
+    form.speechSpeed !== savedSettings.speechSpeed ||
+    form.preferredLanguage !== savedSettings.preferredLanguage ||
+    form.preferredVoiceLanguage !== savedSettings.preferredVoiceLanguage ||
+    form.oneTapCameraMode !== savedSettings.oneTapCameraMode;
 
   const hasProfileChanges =
     profileForm.currentRole !== savedProfile.currentRole ||
@@ -89,9 +111,16 @@ export default function SettingsClient({ userId, user, settings }) {
     const nextSettings = {
       notifications: form.notifications,
       emailAlerts: form.emailAlerts,
+      largeButtonsMode: form.largeButtonsMode,
+      highContrastMode: form.highContrastMode,
+      speechSpeed: form.speechSpeed,
+      preferredLanguage: form.preferredLanguage,
+      preferredVoiceLanguage: form.preferredVoiceLanguage,
+      oneTapCameraMode: form.oneTapCameraMode,
     };
 
     setSavedSettings(nextSettings);
+    updateContextSettings(nextSettings);
 
     startTransition(async () => {
       try {
@@ -102,14 +131,22 @@ export default function SettingsClient({ userId, user, settings }) {
         const normalizedSettings = {
           notifications: result.settings.notifications,
           emailAlerts: result.settings.emailAlerts,
+          largeButtonsMode: result.settings.largeButtonsMode,
+          highContrastMode: result.settings.highContrastMode,
+          speechSpeed: result.settings.speechSpeed,
+          preferredLanguage: result.settings.preferredLanguage,
+          preferredVoiceLanguage: result.settings.preferredVoiceLanguage,
+          oneTapCameraMode: result.settings.oneTapCameraMode,
         };
 
         setForm(normalizedSettings);
         setSavedSettings(normalizedSettings);
+        updateContextSettings(normalizedSettings);
         toast.success("Settings saved.");
       } catch (error) {
         setForm(previousSettings);
         setSavedSettings(previousSettings);
+        updateContextSettings(previousSettings);
         toast.error(error.message || "Failed to save settings.");
       }
     });
@@ -324,6 +361,109 @@ export default function SettingsClient({ userId, user, settings }) {
                   {isPending ? "Saving..." : "Save Preferences"}
                 </Button>
               </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Accessibility</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-8">
+              
+              <div className="space-y-4">
+                <h3 className="text-sm font-semibold border-b pb-2">Visual</h3>
+                <div className="flex items-center justify-between gap-4">
+                  <Label htmlFor="largeButtonsMode">Large Buttons Mode</Label>
+                  <Switch
+                    id="largeButtonsMode"
+                    checked={form.largeButtonsMode}
+                    disabled={isPending}
+                    onCheckedChange={(checked) => handleToggle("largeButtonsMode", checked)}
+                  />
+                </div>
+                <div className="flex items-center justify-between gap-4">
+                  <Label htmlFor="highContrastMode">High Contrast Mode</Label>
+                  <Switch
+                    id="highContrastMode"
+                    checked={form.highContrastMode}
+                    disabled={isPending}
+                    onCheckedChange={(checked) => handleToggle("highContrastMode", checked)}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <h3 className="text-sm font-semibold border-b pb-2">Audio</h3>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <Label htmlFor="speechSpeed">Speech Speed</Label>
+                    <span className="text-sm font-mono">{form.speechSpeed.toFixed(1)}x</span>
+                  </div>
+                  <Slider
+                    id="speechSpeed"
+                    disabled={isPending}
+                    min={0.5}
+                    max={2.0}
+                    step={0.1}
+                    value={[form.speechSpeed]}
+                    onValueChange={(val) => handleToggle("speechSpeed", val[0])}
+                  />
+                </div>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="preferredLanguage">Preferred Language</Label>
+                    <Select
+                      disabled={isPending}
+                      value={form.preferredLanguage}
+                      onValueChange={(val) => handleToggle("preferredLanguage", val)}
+                    >
+                      <SelectTrigger id="preferredLanguage">
+                        <SelectValue placeholder="Select a language" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="en">English (en)</SelectItem>
+                        <SelectItem value="hi">Hindi (hi)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="preferredVoiceLanguage">Voice Language</Label>
+                    <Select
+                      disabled={isPending}
+                      value={form.preferredVoiceLanguage}
+                      onValueChange={(val) => handleToggle("preferredVoiceLanguage", val)}
+                    >
+                      <SelectTrigger id="preferredVoiceLanguage">
+                        <SelectValue placeholder="Select a voice language" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="en">English (en)</SelectItem>
+                        <SelectItem value="hi">Hindi (hi)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <h3 className="text-sm font-semibold border-b pb-2">Interaction</h3>
+                <div className="flex items-center justify-between gap-4">
+                  <Label htmlFor="oneTapCameraMode">One-Tap Camera Mode</Label>
+                  <Switch
+                    id="oneTapCameraMode"
+                    checked={form.oneTapCameraMode}
+                    disabled={isPending}
+                    onCheckedChange={(checked) => handleToggle("oneTapCameraMode", checked)}
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end">
+                <Button onClick={handleSave} disabled={isPending || !hasChanges}>
+                  {isPending ? "Saving..." : "Save Settings"}
+                </Button>
+              </div>
+
             </CardContent>
           </Card>
         </div>

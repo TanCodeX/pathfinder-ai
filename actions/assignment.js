@@ -1,4 +1,5 @@
 "use server";
+import { handleServerError } from "@/lib/error-handler";
 
 import { db } from "@/lib/prisma";
 import { buildUserLookup } from "@/lib/user-query";
@@ -9,6 +10,8 @@ import { logActionError } from "@/lib/action-logger";
 import { revalidatePath } from "next/cache";
 import { EMPTY_HISTORY_RESPONSE } from "@/lib/history-response";
 import { buildSecurePrompt, parseAIJson } from "@/lib/prompt-safety";
+import { revalidateAppPath } from "@/lib/cache-revalidate";
+import { getAuthenticatedHistoryUser } from "@/lib/history-auth";
 import { buildHistoryResponse } from "@/lib/history-loader";
 import { generateGeminiContent } from "@/lib/gemini";
 import { getHistoryRecords } from "@/lib/history-query";
@@ -18,6 +21,8 @@ import { USER_NOT_FOUND_RESPONSE } from "@/lib/user-not-found";
 export async function gradeAssignment(promptText, solutionText) {
   const user = await getAuthenticatedHistoryUser();
 
+  const user = await getUserByScope(userId);
+  if (!user) return USER_NOT_FOUND_RESPONSE;
   if (!user) return EMPTY_HISTORY_RESPONSE;
 
   if (!promptText || !solutionText) {
@@ -59,8 +64,7 @@ export async function gradeAssignment(promptText, solutionText) {
     revalidatePath("/assignment-grader");
     return { success: true, data: record };
   } catch (error) {
-    console.error("Assignment Grader Error:", error);
-    return { success: false, errors: { _form: [error.message || "Failed to grade assignment"] } };
+    return handleServerError(error, "assignment");
   }
 /** Retrieve all graded assignments for the current user. */
 }

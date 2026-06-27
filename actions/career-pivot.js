@@ -1,4 +1,5 @@
 "use server";
+import { handleServerError } from "@/lib/error-handler";
 
 import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
@@ -65,8 +66,7 @@ export async function generatePivotStrategy(currentRole, targetRole) {
     revalidatePath("/career-pivot");
     return { success: true, data: record };
   } catch (error) {
-    console.error("Career Pivot Generation Error:", error);
-    return { success: false, errors: { _form: [error.message || "Failed to generate pivot strategy"] } };
+    return handleServerError(error, "career-pivot");
   }
 }
 

@@ -2,14 +2,18 @@
 
 import { useState, useEffect } from "react";
 import { optimizeLinkedInProfile, getLinkedInOptimizations } from "@/actions/linkedin";
-import { Sparkles, Linkedin, CheckCircle2, Copy } from "lucide-react";
+import { Sparkles, Linkedin, CheckCircle2, Copy, Link as LinkIcon, FileText } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 
 export default function LinkedInOptimizerPage() {
   const [content, setContent] = useState("");
+  const [profileUrl, setProfileUrl] = useState("");
+  const [activeTab, setActiveTab] = useState("url");
   const [loading, setLoading] = useState(false);
   const [history, setHistory] = useState([]);
   const [activeAnalysis, setActiveAnalysis] = useState(null);
@@ -26,18 +30,24 @@ export default function LinkedInOptimizerPage() {
   }, []);
 
   const handleOptimize = async () => {
-    if (content.trim().length < 50) {
+    if (activeTab === "text" && content.trim().length < 50) {
       toast.error("Please paste more of your profile content for an accurate analysis.");
+      return;
+    }
+    if (activeTab === "url" && !profileUrl.trim().startsWith("http")) {
+      toast.error("Please enter a valid LinkedIn URL.");
       return;
     }
 
     setLoading(true);
-    const res = await optimizeLinkedInProfile({ profileContent: content });
+    const data = activeTab === "url" ? { profileUrl: profileUrl.trim() } : { profileContent: content };
+    const res = await optimizeLinkedInProfile(data);
     if (res.success) {
       toast.success("Profile optimized successfully!");
       setHistory([res.data, ...history]);
       setActiveAnalysis(res.data.analysis);
-      setContent("");
+      if (activeTab === "text") setContent("");
+      if (activeTab === "url") setProfileUrl("");
     } else {
       toast.error(res.errors?._form?.[0] || "Failed to optimize profile");
     }
@@ -68,7 +78,7 @@ export default function LinkedInOptimizerPage() {
               Profile <span className="text-gradient-primary">Analysis</span>
             </h1>
             <p className="text-muted-foreground text-sm md:text-base font-medium">
-              Paste your LinkedIn profile text and get AI-driven improvements for recruiters.
+              Provide your LinkedIn profile URL or paste your profile text to get AI-driven improvements for recruiters.
             </p>
           </div>
         </motion.div>
@@ -76,20 +86,51 @@ export default function LinkedInOptimizerPage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           <div className="lg:col-span-5 space-y-6">
             <div className="bg-card border border-border p-6 rounded-3xl shadow-sm">
-              <h3 className="font-bold text-lg mb-4">Paste Your Profile</h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                Copy your headline, About section, and Experience bullet points directly from LinkedIn and paste them here.
-              </p>
-              <Textarea
-                placeholder="E.g. Senior Software Engineer at Tech Corp...\n\nAbout me: I build scalable systems...\n\nExperience: Led a team of 5..."
-                className="min-h-[300px] rounded-2xl resize-none bg-background focus-visible:ring-primary mb-4"
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-              />
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <TabsList className="grid w-full grid-cols-2 mb-6">
+                  <TabsTrigger value="url" className="flex items-center gap-2">
+                    <LinkIcon className="h-4 w-4" /> URL
+                  </TabsTrigger>
+                  <TabsTrigger value="text" className="flex items-center gap-2">
+                    <FileText className="h-4 w-4" /> Paste Text
+                  </TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="url" className="space-y-4">
+                  <div>
+                    <h3 className="font-bold text-lg mb-2">LinkedIn URL</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Enter your public LinkedIn profile URL. We will automatically fetch and analyze your profile.
+                    </p>
+                    <Input
+                      placeholder="https://linkedin.com/in/yourprofile"
+                      className="h-12 rounded-xl bg-background focus-visible:ring-primary mb-4"
+                      value={profileUrl}
+                      onChange={(e) => setProfileUrl(e.target.value)}
+                    />
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="text" className="space-y-4">
+                  <div>
+                    <h3 className="font-bold text-lg mb-2">Paste Your Profile</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Copy your headline, About section, and Experience bullet points directly from LinkedIn and paste them here.
+                    </p>
+                    <Textarea
+                      placeholder="E.g. Senior Software Engineer at Tech Corp...\n\nAbout me: I build scalable systems...\n\nExperience: Led a team of 5..."
+                      className="min-h-[300px] rounded-2xl resize-none bg-background focus-visible:ring-primary mb-4"
+                      value={content}
+                      onChange={(e) => setContent(e.target.value)}
+                    />
+                  </div>
+                </TabsContent>
+              </Tabs>
+
               <Button
                 onClick={handleOptimize}
-                disabled={loading || content.trim().length < 50}
-                className="w-full h-12 rounded-xl font-bold"
+                disabled={loading || (activeTab === "text" && content.trim().length < 50) || (activeTab === "url" && !profileUrl.trim().startsWith("http"))}
+                className="w-full h-12 rounded-xl font-bold mt-4"
               >
                 {loading ? "Analyzing..." : "Analyze Profile"} <Sparkles className="ml-2 h-4 w-4" />
               </Button>

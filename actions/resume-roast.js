@@ -1,4 +1,5 @@
 "use server";
+import { handleServerError } from "@/lib/error-handler";
 
 import { auth } from "@clerk/nextjs/server";
 import { buildSecurePrompt } from "@/lib/prompt-safety";
@@ -39,7 +40,6 @@ export async function generateResumeRoast(resumeContent) {
 
     return { success: true, data: parsedData };
   } catch (error) {
-    console.error("Resume Roast Error:", error);
-    return { success: false, errors: { _form: [error.message || "Failed to roast resume"] } };
+    return handleServerError(error, "resume-roast");
   }
 }

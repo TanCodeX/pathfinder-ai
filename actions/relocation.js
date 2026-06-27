@@ -1,4 +1,5 @@
 "use server";
+import { handleServerError } from "@/lib/error-handler";
 import { createErrorResponse } from "@/lib/action-errors";
 
 import { db } from "@/lib/prisma";
@@ -54,8 +55,7 @@ export async function analyzeRelocation(currentCity, targetCity, salary) {
     revalidatePath("/relocation");
     return { success: true, data: record };
   } catch (error) {
-    console.error("Relocation Analysis Error:", error);
-    return { success: false, errors: { _form: [error.message || "Failed to analyze relocation"] } };
+    return handleServerError(error, "relocation");
   }
 }
 

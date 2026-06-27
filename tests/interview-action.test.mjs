@@ -53,7 +53,6 @@ describe("saveQuizResult", () => {
 
   it("saves quiz result with dynamic industry-aware fallback tip when AI fails", async () => {
     const { saveQuizResult } = await import("../actions/interview.js");
-    const { cacheStore, generateCacheKey } = await import("../lib/cache/index.js");
     const { getCacheStore, generateCacheKey } = await import("../lib/cache/index.js");
 
     actionMocks.auth.mockResolvedValue({ userId: "user-123" });
@@ -84,7 +83,6 @@ describe("saveQuizResult", () => {
 
     const cacheKey = generateCacheKey("quiz-session", "user-123", sessionId);
     const cacheStore = getCacheStore();
-    const cacheKey = generateCacheKey("quiz:session", "user-123", sessionId);
     await cacheStore.set(cacheKey, questions);
 
     const answers = ["Measuring temperature"]; // Wrong answer

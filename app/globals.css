@@ -376,6 +376,46 @@
   }
 }
 
+/* Accessibility Modes */
+:root.high-contrast {
+  --background: oklch(1 0 0) !important;
+  --foreground: oklch(0 0 0) !important;
+  --border: oklch(0 0 0) !important;
+  --input: oklch(0 0 0) !important;
+  --ring: oklch(0 0 0) !important;
+  --primary: oklch(0.2 0.1 264) !important;
+  --primary-foreground: oklch(1 0 0) !important;
+  --muted-foreground: oklch(0.2 0 0) !important;
+  --card: oklch(1 0 0) !important;
+  --card-foreground: oklch(0 0 0) !important;
+  --sidebar-border: oklch(0 0 0) !important;
+  --sidebar-foreground: oklch(0 0 0) !important;
+}
+
+.dark.high-contrast {
+  --background: oklch(0 0 0) !important;
+  --foreground: oklch(1 0 0) !important;
+  --border: oklch(1 0 0) !important;
+  --input: oklch(1 0 0) !important;
+  --ring: oklch(1 0 0) !important;
+  --primary: oklch(0.9 0.2 264) !important;
+  --primary-foreground: oklch(0 0 0) !important;
+  --muted-foreground: oklch(0.9 0 0) !important;
+  --card: oklch(0 0 0) !important;
+  --card-foreground: oklch(1 0 0) !important;
+  --sidebar-border: oklch(1 0 0) !important;
+  --sidebar-foreground: oklch(1 0 0) !important;
+}
+
+.large-buttons button,
+.large-buttons [role="button"],
+.large-buttons .inline-flex.items-center.justify-center {
+  min-height: 44px !important;
+  min-width: 44px !important;
+  font-size: 1.125rem !important;
+  padding: 0.75rem 1.5rem !important;
+}
+
 html {
   scroll-behavior: smooth;
 }

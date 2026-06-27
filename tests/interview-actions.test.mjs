@@ -1,18 +1,22 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { generateQuiz, saveQuizResult, getAssessment } from "../actions/interview.js";
 
-const mocks = vi.hoisted(() => ({
-  auth: vi.fn(),
-  findUniqueUser: vi.fn(),
-  createAssessment: vi.fn(),
-  generateGeminiContent: vi.fn(),
-  cacheGet: vi.fn(),
-  cacheSet: vi.fn(),
-  cacheDelete: vi.fn(),
-  assessmentFindFirst: vi.fn(),
-  checkRateLimit: vi.fn(),
-  formatResetTime: vi.fn(),
-}));
+const mocks = vi.hoisted(() => {
+  const findUniqueUserMock = vi.fn();
+  return {
+    auth: vi.fn(),
+    findUniqueUser: findUniqueUserMock,
+    createAssessment: vi.fn(),
+    generateGeminiContent: vi.fn(),
+    cacheGet: vi.fn(),
+    cacheSet: vi.fn(),
+    cacheDelete: vi.fn(),
+    userFindUnique: findUniqueUserMock,
+    assessmentFindFirst: vi.fn(),
+    checkRateLimit: vi.fn(),
+    formatResetTime: vi.fn(),
+  };
+});
 
 vi.mock("@clerk/nextjs/server", () => ({
   auth: mocks.auth,
@@ -26,10 +30,20 @@ vi.mock("@/lib/prisma", () => ({
         if (res1 !== undefined) return res1;
         return mocks.findUniqueUser(args);
       },
+      findUnique: vi.fn((...args) => {
+        const res1 = mocks.userFindUnique(...args);
+        const res2 = mocks.findUniqueUser(...args);
+        return res1 !== undefined ? res1 : res2;
+      }),
     },
     assessment: {
       create: mocks.createAssessment,
       findFirst: mocks.assessmentFindFirst,
+    },
+    aiRateLimit: {
+      findUnique: vi.fn().mockResolvedValue(null),
+      upsert: vi.fn().mockResolvedValue({ count: 1 }),
+      update: vi.fn().mockResolvedValue({}),
     },
   },
 }));
@@ -43,20 +57,17 @@ vi.mock("@/lib/gemini", () => ({
   generateGeminiContent: mocks.generateGeminiContent,
 }));
 
-vi.mock("@/lib/rate-limit-actions", () => ({
-  checkRateLimit: mocks.checkRateLimit,
-  formatResetTime: mocks.formatResetTime,
-}));
-
 vi.mock("@/lib/cache", async () => {
   const actual = await vi.importActual("@/lib/cache");
+  const mockCacheStore = {
+    get: mocks.cacheGet,
+    set: mocks.cacheSet,
+    delete: mocks.cacheDelete,
+  };
   return {
     ...actual,
-    cacheStore: {
-      get: mocks.cacheGet,
-      set: mocks.cacheSet,
-      delete: mocks.cacheDelete,
-    },
+    cacheStore: mockCacheStore,
+    getCacheStore: () => mockCacheStore,
   };
 });
 
@@ -227,7 +238,7 @@ describe("interview actions", () => {
 
     it("returns null if user is not found in database", async () => {
       mocks.auth.mockResolvedValue({ userId: "clerk-1" });
-      mocks.findUniqueUser.mockResolvedValue(null);
+      mocks.userFindUnique.mockResolvedValue(null);
       const result = await getAssessment("assessment-1");
       expect(result).toBeNull();
     });
@@ -237,6 +248,7 @@ describe("interview actions", () => {
       const mockAssessment = { id: "assessment-1", userId: "user-1" };
 
       mocks.auth.mockResolvedValue({ userId: "clerk-1" });
+      mocks.userFindUnique.mockResolvedValue(mockUser);
       mocks.findUniqueUser.mockResolvedValue(mockUser);
       mocks.assessmentFindFirst.mockResolvedValue(mockAssessment);
 

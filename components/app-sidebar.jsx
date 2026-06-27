@@ -57,6 +57,7 @@ import {
   HeartPulse,
   Rocket,
   Home,
+  Github,
   Workflow,
   CalendarHeart,
   Globe,
@@ -95,6 +96,7 @@ const MENU_GROUPS = [
       { href: "/bullet-rewriter", label: "Bullet Rewriter", icon: <PenLine className="h-4 w-4 text-amber-500" />, shortcut: "" },
       { href: "/ai-cover-letter", label: "Cover Letters", icon: <Mail className="h-4 w-4 text-rose-500" />, shortcut: "Alt+3" },
       { href: "/linkedin-optimizer", label: "LinkedIn Optimizer", icon: <ScanSearch className="h-4 w-4 text-[#0A66C2]" />, shortcut: "" },
+      { href: "/github-analyzer", label: "GitHub Analyzer", icon: <Github className="h-4 w-4 text-foreground" />, shortcut: "" },
       { href: "/linkedin-post", label: "LinkedIn Posts", icon: <Linkedin className="h-4 w-4 text-[#0A66C2]" />, shortcut: "" },
     ]
   },

@@ -5,49 +5,126 @@ import { motion, useScroll, useSpring } from "framer-motion";
 
 const sections = [
   { id: "hero", label: "Overview" },
+  { id: "roadmap", label: "Roadmap" },
+  { id: "resume", label: "Resume" },
+  { id: "interview", label: "Interview" },
   { id: "features", label: "Features" },
-  { id: "career-roadmap", label: "Roadmap" },
-  { id: "resume-showcase", label: "Resume" },
-  { id: "interview-coach", label: "Interview" },
-  { id: "skill-gap", label: "Skill Gap" },
   { id: "pricing", label: "Pricing" },
+  { id: "question", label: "FAQ" },
 ];
 
 export function GlobalScrollTracker() {
-  const [activeSection, setActiveSection] = useState(sections[0].id);
+  const [activeSection, setActiveSection] = useState("hero");
   const [hideTracker, setHideTracker] = useState(false);
   const { scrollYProgress } = useScroll();
   const scaleY = useSpring(scrollYProgress, { stiffness: 100, damping: 30, restDelta: 0.001 });
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            if (entry.target.id === "scroll-story") {
-              setHideTracker(true);
-            } else {
-              setHideTracker(false);
-              setActiveSection(entry.target.id);
-            }
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY + 100; // 100px header offset
+      const scrollStoryEl = document.getElementById("scroll-story");
+      const heroEl = document.getElementById("hero");
+      const featuresEl = document.getElementById("features");
+      const pricingEl = document.getElementById("pricing");
+      const questionEl = document.getElementById("question");
+
+      // Check if user scrolled to the bottom of the page
+      const isAtBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 50;
+      if (isAtBottom) {
+        setActiveSection("question");
+        setHideTracker(false);
+        return;
+      }
+
+      // Check scroll-story dimensions
+      if (scrollStoryEl) {
+        const offsetTop = scrollStoryEl.offsetTop;
+        const offsetHeight = scrollStoryEl.offsetHeight;
+
+        if (scrollPosition >= offsetTop && scrollPosition < offsetTop + offsetHeight) {
+          // Inside ScrollStory!
+          setHideTracker(true);
+          const stageIndex = Math.floor((scrollPosition - offsetTop) / window.innerHeight);
+          if (stageIndex === 0) {
+            setActiveSection("hero"); // Goal Setting (stage 0) maps to Overview/Hero
+          } else if (stageIndex === 1) {
+            setActiveSection("roadmap");
+          } else if (stageIndex === 2) {
+            setActiveSection("resume");
+          } else if (stageIndex >= 3) {
+            setActiveSection("interview");
           }
-        });
-      },
-      { rootMargin: "-40% 0px -40% 0px" }
-    );
+          return;
+        }
+      }
 
-    // Observe tracking sections
-    sections.forEach(({ id }) => {
-      const el = document.getElementById(id);
-      if (el) observer.observe(el);
-    });
+      // Outside ScrollStory
+      setHideTracker(false);
 
-    // Observe ScrollStory to hide the tracker
-    const scrollStoryEl = document.getElementById("scroll-story");
-    if (scrollStoryEl) observer.observe(scrollStoryEl);
+      // Check other elements
+      if (heroEl && scrollPosition >= heroEl.offsetTop && scrollPosition < heroEl.offsetTop + heroEl.offsetHeight) {
+        setActiveSection("hero");
+        return;
+      }
 
-    return () => observer.disconnect();
+      if (featuresEl && scrollPosition >= featuresEl.offsetTop && scrollPosition < featuresEl.offsetTop + featuresEl.offsetHeight) {
+        setActiveSection("features");
+        return;
+      }
+
+      // Handle the gap between features and pricing (like how-it-works or testimonials)
+      if (featuresEl && pricingEl && scrollPosition >= featuresEl.offsetTop + featuresEl.offsetHeight && scrollPosition < pricingEl.offsetTop) {
+        setActiveSection("features"); // Stay on features until pricing enters
+        return;
+      }
+
+      if (pricingEl && scrollPosition >= pricingEl.offsetTop && scrollPosition < pricingEl.offsetTop + pricingEl.offsetHeight) {
+        setActiveSection("pricing");
+        return;
+      }
+
+      if (questionEl && scrollPosition >= questionEl.offsetTop) {
+        setActiveSection("question");
+        return;
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  const handleDotClick = (id) => {
+    const scrollStoryEl = document.getElementById("scroll-story");
+    
+    if (id === "roadmap" && scrollStoryEl) {
+      window.scrollTo({
+        top: scrollStoryEl.offsetTop + window.innerHeight + 10,
+        behavior: "smooth"
+      });
+    } else if (id === "resume" && scrollStoryEl) {
+      window.scrollTo({
+        top: scrollStoryEl.offsetTop + (2 * window.innerHeight) + 10,
+        behavior: "smooth"
+      });
+    } else if (id === "interview" && scrollStoryEl) {
+      window.scrollTo({
+        top: scrollStoryEl.offsetTop + (3 * window.innerHeight) + 10,
+        behavior: "smooth"
+      });
+    } else {
+      const el = document.getElementById(id);
+      if (el) {
+        const offset = 80;
+        const elementPosition = el.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.scrollY - offset;
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: "smooth"
+        });
+      }
+    }
+  };
 
   return (
     <motion.div 
@@ -74,7 +151,10 @@ export function GlobalScrollTracker() {
                  {s.label}
                </span>
              </div>
-             <a href={`#${s.id}`} className="block relative z-10 p-2 -mr-2 cursor-pointer">
+             <button 
+               onClick={() => handleDotClick(s.id)}
+               className="block relative z-10 p-2 -mr-2 cursor-pointer bg-transparent border-0 outline-none"
+             >
                <div
                   className={`h-3 w-3 rounded-full border-[2px] transition-all duration-500 ${
                     isActive 
@@ -84,7 +164,7 @@ export function GlobalScrollTracker() {
                 >
                   {isPast && <div className="absolute inset-0 rounded-full bg-primary/20 animate-ping" />}
                 </div>
-             </a>
+             </button>
           </div>
         );
       })}

@@ -1,4 +1,5 @@
 "use server";
+import { handleServerError } from "@/lib/error-handler";
 
 import { db } from "@/lib/prisma";
 import { logActionError } from "@/lib/action-logger";
@@ -61,8 +62,7 @@ export async function assessBurnout(symptoms, workload) {
     revalidatePath("/burnout-coach");
     return { success: true, data: record };
   } catch (error) {
-    console.error("Burnout Assessment Error:", error);
-    return { success: false, errors: { _form: [error.message || "Failed to assess burnout"] } };
+    return handleServerError(error, "burnout");
   }
 }
 /** Retrieve all burnout assessments for the current user. */

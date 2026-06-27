@@ -8,6 +8,8 @@ import { BackgroundEngine } from "@/components/backgrounds";
 import { CursorGlow } from "@/components/ui/CursorGlow";
 import { ScrollProgress } from "@/components/ui/ScrollProgress";
 import { getEnv } from "@/lib/env";
+import { auth } from "@clerk/nextjs/server";
+import { getUserSettings } from "@/actions/settings";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -24,8 +26,26 @@ export const metadata = {
 /**
  * @param {{ children: React.ReactNode }} props
  */
-export default function RootLayout(props) {
+export default async function RootLayout(props) {
   const { children } = props;
+  
+  let userId = null;
+  try {
+    const authResult = await auth();
+    userId = authResult?.userId;
+  } catch (error) {
+    // Clerk throws if middleware is bypassed; ignore safely for local bypass
+    console.warn("Clerk auth bypassed or unavailable in layout.");
+  }
+  
+  let settings = null;
+  if (userId) {
+    try {
+      settings = await getUserSettings();
+    } catch (e) {
+      console.error("Failed to load settings in layout", e);
+    }
+  }
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -37,7 +57,7 @@ export default function RootLayout(props) {
           signUpFallbackRedirectUrl="/onboarding"
           afterSignOutUrl="/"
         >
-          <Providers>
+          <Providers initialAccessibilitySettings={settings}>
             <BackgroundEngine />
             <ScrollProgress />
             <CursorGlow />

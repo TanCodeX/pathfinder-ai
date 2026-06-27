@@ -6,6 +6,8 @@ import { Video, Square, RotateCcw, Sparkles, AlertCircle, Eye } from "lucide-rea
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { useAccessibility } from "@/components/accessibility-provider";
+import { useAuth } from "@clerk/nextjs";
 
 const QUESTION = "Describe a time when you disagreed with a team member. How did you resolve it?";
 
@@ -20,24 +22,33 @@ export default function VideoCoachPage() {
   const videoRef = useRef(null);
   const streamRef = useRef(null);
   const recognitionRef = useRef(null);
+  const { oneTapCameraMode } = useAccessibility();
+  const { isSignedIn } = useAuth();
+
+  const startCamera = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+      streamRef.current = stream;
+      setPermissionsGranted(true);
+      return true;
+    } catch (err) {
+      console.error("Error accessing media devices.", err);
+      setError("Camera and microphone access denied. Please allow permissions in your browser.");
+      return false;
+    }
+  };
 
   // Initialize Camera and Speech Recognition
   useEffect(() => {
-    async function setupMedia() {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-        }
-        streamRef.current = stream;
-        setPermissionsGranted(true);
-      } catch (err) {
-        console.error("Error accessing media devices.", err);
-        setError("Camera and microphone access denied. Please allow permissions in your browser.");
-      }
-    }
-
     if (typeof window !== "undefined") {
+      const isLocalhost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+      if ((oneTapCameraMode || !isSignedIn) && isLocalhost) {
+        startCamera();
+      }
+
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (SpeechRecognition) {
         recognitionRef.current = new SpeechRecognition();
@@ -55,12 +66,8 @@ export default function VideoCoachPage() {
         recognitionRef.current.onerror = (event) => {
           console.error("Speech recognition error", event.error);
         };
-      } else {
-        setError("Speech Recognition is not supported in this browser. Try Google Chrome.");
       }
     }
-
-    setupMedia();
 
     return () => {
       // Cleanup stream
@@ -68,10 +75,14 @@ export default function VideoCoachPage() {
         streamRef.current.getTracks().forEach(track => track.stop());
       }
     };
-  }, []);
+  }, [oneTapCameraMode]);
 
-  const toggleRecording = () => {
-    if (!permissionsGranted || error) return;
+  const toggleRecording = async () => {
+    if (!permissionsGranted && !error) {
+       const success = await startCamera();
+       if (!success) return;
+    }
+    if (error) return;
 
     if (isRecording) {
       recognitionRef.current?.stop();

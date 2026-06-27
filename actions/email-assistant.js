@@ -1,4 +1,5 @@
 "use server";
+import { handleServerError } from "@/lib/error-handler";
 import { createErrorResponse } from "@/lib/action-errors";
 
 import { db } from "@/lib/prisma";
@@ -48,8 +49,7 @@ export async function generateEmailReply(originalEmail, goal) {
     revalidatePath("/email-assistant");
     return { success: true, data: record };
   } catch (error) {
-    console.error("Email Generation Error:", error);
-    return { success: false, errors: { _form: [error.message || "Failed to generate email reply"] } };
+    return handleServerError(error, "email-assistant");
   }
 }
 

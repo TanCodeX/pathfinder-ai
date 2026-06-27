@@ -55,6 +55,7 @@ model User {
   roadmaps             Roadmap[]
   jobApplications      JobApplication[]
   linkedinOptimizations LinkedInOptimization[]
+  githubAnalyses       GithubAnalysis[]
   networkingEmails     NetworkingEmail[]
   projectIdeas         ProjectIdea[]
   resumeGenerations    ResumeGeneration[]
@@ -262,15 +263,21 @@ model AuditLog {
 
 
 model UserSettings {
-  id              String   @id @default(cuid())
-  userId          String   @unique
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  theme           String   @default("light")
-  notifications   Boolean  @default(true)
-  emailAlerts     Boolean  @default(true)
-  dashboardLayout String   @default("default")
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id                     String   @id @default(cuid())
+  userId                 String   @unique
+  user                   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  theme                  String   @default("light")
+  notifications          Boolean  @default(true)
+  emailAlerts            Boolean  @default(true)
+  dashboardLayout        String   @default("default")
+  largeButtonsMode       Boolean  @default(false)
+  highContrastMode       Boolean  @default(false)
+  speechSpeed            Float    @default(1.0)
+  preferredLanguage      String   @default("en")
+  preferredVoiceLanguage String   @default("en")
+  oneTapCameraMode       Boolean  @default(false)
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
 }
 
 // @@unique([userId, action, windowStart]) - exact-window upsert/lookup (rate-limit hot path).
@@ -326,6 +333,18 @@ model LinkedInOptimization {
   userId         String
   user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   profileContent String   @db.Text
+  analysis       Json
+  createdAt      DateTime @default(now())
+
+  @@index([userId])
+}
+
+model GithubAnalysis {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  githubUrl      String?  @db.Text
+  profileContent String?  @db.Text
   analysis       Json
   createdAt      DateTime @default(now())
 

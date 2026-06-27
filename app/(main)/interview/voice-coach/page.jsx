@@ -6,6 +6,7 @@ import { Mic, Square, Play, RotateCcw, Sparkles, AlertCircle, CheckCircle2 } fro
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { useTextToSpeech } from "@/hooks/use-text-to-speech";
 
 // A mock question or we could let the user select one. 
 // For V1, we'll use a standard behavioral question.
@@ -17,6 +18,7 @@ export default function VoiceCoachPage() {
   const [evaluating, setEvaluating] = useState(false);
   const [evaluation, setEvaluation] = useState(null);
   const [speechSupported, setSpeechSupported] = useState(true);
+  const { speak, cancel, supported: ttsSupported } = useTextToSpeech();
   
   const recognitionRef = useRef(null);
 
@@ -75,9 +77,8 @@ export default function VoiceCoachPage() {
         setEvaluation(res.data);
         
         // Use Speech Synthesis to read the feedback
-        if ("speechSynthesis" in window) {
-          const utterance = new SpeechSynthesisUtterance(res.data.feedback);
-          window.speechSynthesis.speak(utterance);
+        if (ttsSupported) {
+          speak(res.data.feedback);
         }
       } else {
         toast.error(res.error);
@@ -89,9 +90,7 @@ export default function VoiceCoachPage() {
   const handleRetry = () => {
     setTranscript("");
     setEvaluation(null);
-    if ("speechSynthesis" in window) {
-      window.speechSynthesis.cancel();
-    }
+    cancel();
   };
 
   return (

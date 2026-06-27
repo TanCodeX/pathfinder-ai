@@ -66,7 +66,6 @@ export default function Quiz() {
 
   useEffect(() => {
     if (questions && questions.length > 0) {
-    if (questions.length > 0) {
       setAnswers(new Array(questions.length).fill(null));
     }
   }, [quizData, questions]);
@@ -89,6 +88,7 @@ export default function Quiz() {
   const finishQuiz = async () => {
     try {
       await saveQuizResultFn(quizData.sessionId, answers, selectedCategory);
+      await saveQuizResultFn(quizData.sessionId || quizData, answers, selectedCategory);
       const target = sessionId || questions;
       await saveQuizResultFn(target, answers, selectedCategory);
       await saveQuizResultFn(sessionId, answers, selectedCategory);

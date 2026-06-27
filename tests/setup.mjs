@@ -1,5 +1,4 @@
 import { afterAll, afterEach, beforeAll, vi } from "vitest";
-
 import { server } from "./mocks/server.mjs";
 
 // Ensure AbortController and AbortSignal are consistent with Node.js native implementations
@@ -11,7 +10,6 @@ if (typeof globalThis.AbortController !== "undefined" &&
   // this is where we would normalize it. For happy-dom, it is already compatible.
 }
 
-// Set required environment variables for tests
 // Set required environment variables before any module evaluation
 process.env.NODE_ENV = "test";
 if (!process.env.DATABASE_URL) {
