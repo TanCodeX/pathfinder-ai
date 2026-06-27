@@ -2,7 +2,6 @@
 import { handleServerError } from "@/lib/error-handler";
 
 import { db } from "@/lib/prisma";
-import { userExists } from "@/lib/user-guards";
 import { auth } from "@clerk/nextjs/server";
 import { createErrorResponse } from "@/lib/action-errors";
 import { revalidatePath } from "next/cache";
