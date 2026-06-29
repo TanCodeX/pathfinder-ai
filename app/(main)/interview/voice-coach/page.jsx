@@ -12,7 +12,7 @@ import { useTranslation } from "@/hooks/use-translation";
 
 export default function VoiceCoachPage() {
   const { t, language } = useTranslation();
-  const { data: questionPool, fn: loadQuestions } = useFetch(getCoachQuestions);
+  const { data: questionPool, loading: loadingQuestion, error: questionError, fn: loadQuestions } = useFetch(getCoachQuestions);
   const [question, setQuestion] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const [transcript, setTranscript] = useState("");
@@ -23,8 +23,9 @@ export default function VoiceCoachPage() {
   
   const recognitionRef = useRef(null);
 
+  // Reload when language changes so the prompt stays in sync with speech recognition locale
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { loadQuestions(); }, []);
+  useEffect(() => { loadQuestions(language); }, [language]);
 
   useEffect(() => {
     if (questionPool?.length) {
@@ -61,7 +62,7 @@ export default function VoiceCoachPage() {
   }, [language, t]);
 
   const toggleRecording = () => {
-    if (!speechSupported) return;
+    if (!speechSupported || loadingQuestion || !question) return;
 
     if (isRecording) {
       recognitionRef.current?.stop();
@@ -76,8 +77,8 @@ export default function VoiceCoachPage() {
   };
 
   const handleEvaluate = async () => {
-    // Wait a brief moment for final transcript results
     setTimeout(async () => {
+      if (loadingQuestion || !question) return;
       if (!transcript.trim()) {
         toast.error(t("noSpeechDetected"));
         return;
@@ -145,9 +146,18 @@ export default function VoiceCoachPage() {
               className="bg-card border border-border p-8 rounded-3xl shadow-lg text-center"
             >
               <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest mb-4">{t("prompt")}</h3>
-              <p className="text-xl md:text-2xl font-semibold leading-relaxed text-foreground">
-                "{question}"
-              </p>
+              {loadingQuestion ? (
+                <div className="space-y-2 animate-pulse mx-auto max-w-lg">
+                  <div className="h-4 bg-muted rounded w-full" />
+                  <div className="h-4 bg-muted rounded w-4/5 mx-auto" />
+                </div>
+              ) : questionError ? (
+                <p className="text-sm text-destructive">Failed to load question. Please refresh the page.</p>
+              ) : (
+                <p className="text-xl md:text-2xl font-semibold leading-relaxed text-foreground">
+                  "{question}"
+                </p>
+              )}
             </motion.div>
 
             {!evaluation && !evaluating && (
@@ -162,9 +172,12 @@ export default function VoiceCoachPage() {
                   )}
                   <button
                     onClick={toggleRecording}
+                    disabled={loadingQuestion || !question}
                     className={`relative z-10 h-32 w-32 rounded-full flex items-center justify-center shadow-2xl transition-all duration-300 ${
-                      isRecording 
-                        ? 'bg-red-500 text-white hover:bg-red-600 scale-110' 
+                      isRecording
+                        ? 'bg-red-500 text-white hover:bg-red-600 scale-110'
+                        : loadingQuestion || !question
+                        ? 'bg-muted text-muted-foreground cursor-not-allowed opacity-50'
                         : 'bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-105'
                     }`}
                   >
@@ -172,7 +185,7 @@ export default function VoiceCoachPage() {
                   </button>
                 </div>
                 <p className="mt-8 font-bold text-lg">
-                  {isRecording ? t("recordingClickToStop") : t("clickMicToStart")}
+                  {isRecording ? t("recordingClickToStop") : loadingQuestion ? "Loading question..." : t("clickMicToStart")}
                 </p>
 
                 {transcript && (

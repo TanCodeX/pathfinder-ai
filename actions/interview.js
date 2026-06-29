@@ -13,6 +13,7 @@ import { validateInput, validateOutput } from "@/lib/validate";
 import { quizCategorySchema, quizResultSaveSchema, quizResultSaveSessionSchema } from "@/lib/schemas/forms";
 import { interviewQuestionsOutputSchema, voiceFeedbackOutputSchema, videoFeedbackOutputSchema } from "@/lib/schemas";
 import { checkRateLimit, formatResetTime } from "@/lib/rate-limit-actions";
+import { translations } from "@/lib/translations";
 
 // Fallback MCQ questions in case Gemini generation fails, categorized by industry
 const TECH_FALLBACK_QUESTIONS = [
@@ -481,12 +482,19 @@ const FallbackQuizPool = {
 };
 
 /**
- * Returns an array of question strings for the voice/video coach,
- * selected from the fallback pool that matches the user's industry.
+ * Returns an array of question strings for the voice/video coach.
+ * For non-English locales that have translations, returns the localized
+ * question(s) to keep speech recognition and displayed prompt in sync.
+ * For English (default), selects from the industry-specific fallback pool.
  */
-export async function getCoachQuestions() {
+export async function getCoachQuestions(locale = "en") {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
+
+  if (locale !== "en" && translations[locale]?.interviewQuestion) {
+    return [translations[locale].interviewQuestion];
+  }
+
   const user = await db.user.findUnique({
     where: { clerkUserId: userId },
     select: { industry: true },
