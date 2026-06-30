@@ -7,6 +7,7 @@ import { auth } from "@clerk/nextjs/server";
 import { createPromptConfig } from "@/lib/prompt-config";
 import { revalidatePath } from "next/cache";
 import { createErrorResponse } from "@/lib/action-errors";
+import { createRecord } from "@/lib/record-create";
 import { getAuthenticatedUserId } from "@/lib/auth-userid";
 import { buildSecurePrompt, parseAIJson } from "@/lib/prompt-safety";
 import { generateGeminiContent } from "@/lib/gemini";
@@ -56,14 +57,12 @@ export async function generatePivotStrategy(currentRole, targetRole) {
     const aiResult = await runAiGeneration(prompt);
     const parsedData = parseAIJson(aiResult.response.text());
 
-    const record = await db.careerPivot.create({
-      data: {
-        userId: user.id,
-        currentRole,
-        targetRole,
-        analysis: parsedData,
-      },
-    });
+    const record = await createRecord(db.careerPivot, {
+  userId: user.id,
+  currentRole,
+  targetRole,
+  result: parsedData,
+});
 
     revalidatePath("/career-pivot");
     return { success: true, data: record };
